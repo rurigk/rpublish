@@ -1,6 +1,7 @@
-use std::fs;
+use std::fs::File;
+use std::{fs};
 use std::path::Path;
-use std::io::{Result, Error, ErrorKind};
+use std::io::{Error, ErrorKind, Result, Write};
 
 extern crate termion;
 use termion::{color};
@@ -17,6 +18,9 @@ pub fn setup_system() -> Result<()> {
 fn setup_directories_structure() -> bool{
     // Root directory
     if !graceful_mkdir("data") {return false;}
+
+    // Auth directory
+    if !graceful_mkdir("data/auth") {return false;}
 
     // Public directory for uploads
     if !graceful_mkdir("data/public") {return false;}
@@ -41,14 +45,11 @@ fn graceful_mkdir(dir_path: &str) -> bool {
     let current_path = std::env::current_dir().unwrap();
     let current_path = current_path.as_path().display();
     let path = Path::new(dir_path);
-    // Get the metadata attributes of a file/dir
-    let attributes_result = fs::metadata(&path);
-    // Check if it exists or something is wrong
-    match attributes_result {
+    // Get the metadata attributes of a file/dir and check if it exists or something is wrong
+    match fs::metadata(&path) {
         Ok(attributes) => {
             if attributes.is_dir() {
-                if attributes.permissions().readonly()
-                {
+                if attributes.permissions().readonly() {
                     println!("{}{}/{}: Is not writable", color::Fg(color::Red), current_path, path.display());
                     return false;
                 }
@@ -62,8 +63,7 @@ fn graceful_mkdir(dir_path: &str) -> bool {
         },
         Err(error) => {
             // Get the error kind to compare later
-            let error_kind = error.kind();
-            match error_kind {
+            match error.kind() {
                 ErrorKind::NotFound => {
                     // The dir not exists, create dir
                     let create_result = fs::create_dir(path);
@@ -72,8 +72,7 @@ fn graceful_mkdir(dir_path: &str) -> bool {
                             println!("{}{}/{}: Created", color::Fg(color::Cyan), current_path,path.display());
                             true
                         },
-                        Err(create_error) => 
-                        {
+                        Err(create_error) =>  {
                             println!("{}{}/{}: {}", color::Fg(color::Red), current_path,path.display(), create_error);
                             false
                         }
@@ -86,5 +85,42 @@ fn graceful_mkdir(dir_path: &str) -> bool {
             }
         }
     }
+}
+
+pub fn write_json(file_path: &str, content: String) -> Result<()>
+{
+    // Current dir to display in log
+    let current_path = std::env::current_dir().unwrap();
+    let current_path = current_path.as_path().display();
+
+    // Create the path
+    let path = Path::new(file_path);
     
+    // Create the file, truncates if it exist
+    match File::create(path) {
+        Ok(mut file) => {
+            // Try to write the content
+            match file.write_all(content.as_bytes()) {
+                Ok(_) => {
+                    // Content written
+                    println!("{} File Writed: {}/{}", color::Fg(color::Cyan), current_path, path.display());
+                    Ok(())
+                },
+                Err(error) => {
+                    // Pretty error, Cannot be written
+                    Err(Error::new(
+                        error.kind(), 
+                        format!("{}File cannot be written: {}/{}", color::Fg(color::Red), current_path, path.display())
+                    ))
+                }
+            }
+        },
+        Err(error) => {
+            // Pretty error, Cannot be created
+            Err(Error::new(
+                error.kind(), 
+                format!("{}File: {}/{} Cannot be created {:?}", color::Fg(color::Red), current_path, path.display(), error)
+            ))
+        }
+    }
 }

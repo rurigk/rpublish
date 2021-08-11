@@ -1,46 +1,39 @@
 use std::sync::Mutex;
-
-use actix_web::{web, App, HttpServer, Responder};
+use actix_web::{web, App, HttpServer, middleware};
 extern crate termion;
 use termion::{color};
 
-mod init;
-mod rpublish;
+mod helpers; // Initialization routines
+mod rpublish; // RPublish system
 
-async fn index(app: web::Data<Mutex<rpublish::RPublishApp>>) -> impl Responder {
-    // Aquire app reference
-    let mut app = app.lock().unwrap();
-
-    let test_data = app.test();
-    format!("Request number: {}", test_data)
-}
+mod public_endpoint; // Public pages related things
+mod auth_endpoint; // Auth api
+mod api_endpoint; // System api
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     // Check or create data directories
-    let setup_result = init::setup_system();
-    match setup_result {
+    match helpers::setup_system() {
         Ok(_) => {},
-        Err(setup_error) => {
-            println!("{}Initialization failed: {}", color::Fg(color::Red), setup_error);
-        }
+        Err(setup_error) => println!("{}Initialization failed: {}", color::Fg(color::Red), setup_error)
     }
 
     let data = web::Data::new(Mutex::new(
-        rpublish::RPublishApp{
-            shared: String::new()
-        }
+        rpublish::RPublishApp::default()
     ));
 
+    println!("Starting the server");
+    // Bind and start the server
     HttpServer::new(move || {
-        App::new().app_data(data.clone()).service(
-            // prefixes all resources and routes attached to it...
-            web::scope("/app")
-                // ...so this handles requests for `GET /app/index.html`
-                .route("/index", web::get().to(index)),
-        )
-    })
-    .bind("127.0.0.1:8080")?
+        App::new()
+        .app_data( data.clone() )
+        .wrap( middleware::NormalizePath::new(
+            middleware::normalize::TrailingSlash::Trim
+        ))
+        .service(web::scope("/auth").configure(auth_endpoint::configure))
+        .service(web::scope("/api").configure(api_endpoint::configure))
+        .configure(public_endpoint::configure)
+    }).bind("127.0.0.1:1337")?
     .run()
     .await
 }
