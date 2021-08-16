@@ -6,9 +6,8 @@ use termion::{color};
 mod helpers; // Initialization routines
 mod rpublish; // RPublish system
 
-mod public_endpoint; // Public pages related things
-mod auth_endpoint; // Auth api
-mod api_endpoint; // System api
+mod routes;
+mod handlers;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -30,9 +29,14 @@ async fn main() -> std::io::Result<()> {
         .wrap( middleware::NormalizePath::new(
             middleware::normalize::TrailingSlash::Trim
         ))
-        .service(web::scope("/auth").configure(auth_endpoint::configure))
-        .service(web::scope("/api").configure(api_endpoint::configure))
-        .configure(public_endpoint::configure)
+        .service(web::scope("/auth").configure(handlers::auth::configure))
+        .service(web::scope("/api").configure(handlers::api::configure))
+        .service(
+            actix_files::Files::new("/public", "assets/public")
+                .show_files_listing()
+                .use_last_modified(true),
+        )
+        .configure(handlers::public::configure)
     }).bind("127.0.0.1:1337")?
     .run()
     .await

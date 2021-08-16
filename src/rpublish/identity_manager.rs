@@ -12,14 +12,15 @@ use argon2::{
     Argon2
 };
 extern crate termion;
+use termion::input::TermRead;
 use termion::{color, style};
 
 use crate::helpers::write_json;
 
 pub struct IdentityManager
 {
-    users: Users,
-    sessions: HashMap<String, String>
+    pub users: Users,
+    pub sessions: Sessions
 }
 
 impl IdentityManager {
@@ -28,12 +29,58 @@ impl IdentityManager {
             Ok(users) => {
                 Self {
                     users: users,
-                    sessions: HashMap::new()
+                    sessions: Sessions::new()
                 }
             },
             Err(_) => panic!("{}Failed loading users!", color::Fg(color::Red))
         }
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Sessions {
+    sessions: HashMap<String, Session>
+}
+
+impl Sessions {
+    fn new() -> Self {
+        Sessions{
+            sessions: HashMap::new()
+        }
+    }
+
+    pub fn validate(&self, sessid: String, ip: &String) -> bool {
+        match self.sessions.get(&sessid) {
+            Some(session) => {
+                if &session.ip == ip {
+                    return true
+                } else {
+                    return false
+                }
+            },
+            None => return false,
+        }
+    }
+
+    pub fn create(&mut self, sessid: String, username: String, ip: String)
+    {
+        self.sessions.insert(sessid, Session{
+            username: username,
+            ip: ip,
+            date: chrono::offset::Utc::now(),
+        });
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Session {
+    username: String,
+    ip: String,
+    date: DateTime<Utc>
+}
+
+impl Session {
+    
 }
 
 #[derive(Serialize, Deserialize)]
@@ -53,7 +100,7 @@ impl Users {
                         println!("{}Users loaded", color::Fg(color::Green));
                         Ok(users)
                     },
-                    Err(error) => {
+                    Err(_) => {
                         Err(Error::new(
                             ErrorKind::InvalidData, 
                             format!("{}Error deserializing file", color::Fg(color::Red))
@@ -68,15 +115,17 @@ impl Users {
                         let mut new_users = Self{
                             users: Vec::new()
                         };
-                        let user_name = Self::read_input("Admin username");
+                        let user_name = Self::read_input("Admin username: ");
 
                         loop {
                             
-                            let user_password = Self::read_input("Admin password");
-                            let user_password_repeat = Self::read_input("Admin password (repeat)");
+                            let user_password = Self::read_input_hidden("Admin password: ")
+                                .ok_or_else(|| std::io::Error::from(ErrorKind::InvalidInput))?;
+                            let user_password_repeat = Self::read_input_hidden("Admin password (repeat): ")
+                                .ok_or_else(|| std::io::Error::from(ErrorKind::InvalidInput))?;
 
                             if user_password == user_password_repeat {
-                                new_users.users.push(User::new(user_name.as_str(), user_password.as_str()));
+                                new_users.users.push(User::new(user_name.trim(), user_password.trim()));
                                 break;
                             }
                         }
@@ -100,10 +149,17 @@ impl Users {
 
     fn read_input(text: &str) -> String {
         let mut data : String = String::new();
-        print!("    {}{}{}{}{}", style::Bold, color::Fg(color::Yellow), text, style::Reset, style::Bold);
+        print!("    {}{}{}{}{}{}", style::Reset, style::Bold, color::Fg(color::Yellow), text, style::Reset, style::Bold);
         stdout().flush().ok().expect("Could not flush stdout");
         stdin().read_line(&mut data).expect("Error: unable to read user input");
-        data
+        data.trim().to_string()
+    }
+
+    fn read_input_hidden(text: &str) -> Option<String> {
+        let mut stdout = stdout();
+        print!("\n    {}{}{}{}{}{}", style::Reset, style::Bold, color::Fg(color::Yellow), text, style::Reset, style::Bold);
+        stdout.flush().ok().expect("Could not flush stdout");
+        stdin().read_passwd(&mut stdout).expect("Error: unable to read user input")
     }
 
     fn save(&self) {
@@ -118,16 +174,49 @@ impl Users {
         }
     }
 
-    pub fn get(username: &str) -> Result<User, IdentityError> {
-        todo!()
+    pub fn get(&self, username: &str) -> Result<&User, IdentityError> {
+        let user_iter = self.users.iter();
+        for user in user_iter {
+            if user.user_name.as_str() == username {
+                return Ok(user)
+            }
+        }
+        Err(IdentityError{
+            kind: IdentityErrorKind::UserNotFound
+        })
     }
     
-    pub fn create(username: &str, password: &str) -> Result<User, IdentityError> {
-        todo!()
+    #[allow(dead_code)]
+    pub fn create(&mut self, username: &str, password: &str) -> Result<&User, IdentityError> {
+        match self.get(username) {
+            Ok(_) => {
+                Err(IdentityError{
+                    kind: IdentityErrorKind::UserAlreadyExist
+                })
+            },
+            Err(_) => {
+                let user = User::new(username.trim(), password.trim());
+                self.users.push(user);
+                self.save();
+                Ok(self.users.last().unwrap())
+            },
+        }
     }
 
-    pub fn delete(username: &str, password: &str) {
-
+    pub fn delete(&mut self, username: &str, password: &str) -> Result<(), IdentityError> {
+        match self.get(username) {
+            Ok(user) => {
+                match user.authenticate(password) {
+                    Ok(_) => todo!(),
+                    Err(_) => todo!(),
+                }
+            },
+            Err(_) => {
+                Err(IdentityError{
+                    kind: IdentityErrorKind::UserNotFound
+                })
+            },
+        }
     }
 }
 
@@ -135,9 +224,6 @@ impl Users {
 pub struct User
 {
     user_name: String,
-    first_name: String,
-    last_name: String,
-    show_name: String,
     password_hash: String,
     password_update_date: DateTime<Utc>,
     created_date: DateTime<Utc>,
@@ -148,9 +234,6 @@ impl User {
     pub fn new(user: &str, password: &str) -> Self {
         Self {
             user_name: user.to_string(),
-            first_name: String::new(),
-            last_name: String::new(),
-            show_name: String::new(),
             password_hash: Self::hash_password(password),
             password_update_date: chrono::offset::Utc::now(),
             created_date: chrono::offset::Utc::now(),
@@ -180,6 +263,7 @@ impl User {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub enum IdentityErrorKind
 {

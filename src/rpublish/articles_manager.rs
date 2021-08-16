@@ -2,14 +2,14 @@ use crate::rpublish::metadata_cache::MetadataCache;
 use crate::rpublish::articles_cache::ArticlesCache;
 
 pub struct ArticlesManager{
-    metadata_cache: MetadataCache,
-    articles_cache: ArticlesCache
+    _metadata_cache: MetadataCache,
+    _articles_cache: ArticlesCache
 }
 impl ArticlesManager {
     pub fn new() -> ArticlesManager {
         ArticlesManager{
-            metadata_cache: MetadataCache::new(),
-            articles_cache: ArticlesCache::new()
+            _metadata_cache: MetadataCache::new(),
+            _articles_cache: ArticlesCache::new()
         }
     }
 

@@ -6,7 +6,7 @@ impl MetadataCache {
         MetadataCache{}
     }
 
-    pub fn is_cached(&mut self, article_id: &str) -> bool {
+    pub fn _is_cached(&mut self, _article_id: &str) -> bool {
         false
     }
 }
