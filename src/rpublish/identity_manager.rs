@@ -49,8 +49,8 @@ impl Sessions {
         }
     }
 
-    pub fn validate(&self, sessid: String, ip: &String) -> bool {
-        match self.sessions.get(&sessid) {
+    pub fn validate(&self, sessid: &String, ip: &String) -> bool {
+        match self.sessions.get(sessid) {
             Some(session) => {
                 if &session.ip == ip {
                     return true
@@ -60,6 +60,11 @@ impl Sessions {
             },
             None => return false,
         }
+    }
+
+    pub fn invalidate(&mut self, sessid: &String)
+    {
+        self.sessions.remove(sessid);
     }
 
     pub fn create(&mut self, sessid: String, username: String, ip: String)
