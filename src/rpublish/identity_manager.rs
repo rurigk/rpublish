@@ -27,9 +27,14 @@ impl IdentityManager {
     pub fn new() -> Self {
         match Users::load_users() {
             Ok(users) => {
-                Self {
-                    users: users,
-                    sessions: Sessions::new()
+                match Sessions::load_sessions() {
+                    Ok(sessions) => {
+                        Self {
+                            users: users,
+                            sessions: sessions
+                        }
+                    },
+                    Err(_) => panic!("{}Failed loading sessions!", color::Fg(color::Red))
                 }
             },
             Err(_) => panic!("{}Failed loading users!", color::Fg(color::Red))
@@ -44,20 +49,55 @@ pub struct Sessions {
 
 impl Sessions {
     fn new() -> Self {
-        Sessions{
+        Self{
             sessions: HashMap::new()
         }
     }
 
-    pub fn validate(&self, sessid: &String, ip: &String) -> bool {
-        match self.sessions.get(sessid) {
-            Some(session) => {
-                if &session.ip == ip {
-                    return true
-                } else {
-                    return false
+    pub fn load_sessions() -> Result<Self, std::io::Error> {
+        let path = Path::new("data/auth/sessions.json");
+        match File::open(path) {
+            Ok(file) => {
+                let reader = BufReader::new(file);
+                match serde_json::from_reader::<BufReader<File>, Self>(reader) {
+                    Ok(users) => {
+                        println!("{}Sessions loaded", color::Fg(color::Green));
+                        Ok(users)
+                    },
+                    Err(_) => {
+                        Err(Error::new(
+                            ErrorKind::InvalidData, 
+                            format!("{}Error deserializing file", color::Fg(color::Red))
+                        ))
+                    }
                 }
             },
+            Err(error) => {
+                match error.kind() {
+                    ErrorKind::NotFound => {
+                        println!("{}Sessions file Not Found, Creating one", color::Fg(color::Cyan));
+                        let mut new_sessions = Self{
+                            sessions: HashMap::new()
+                        };
+                        new_sessions.save();
+                        Ok(new_sessions)
+                    },
+                    ErrorKind::PermissionDenied => {
+                        println!("{}Error reading sessions file: Permision Denied", color::Fg(color::Red));
+                        Err(Error::new(ErrorKind::InvalidData, "File read error: Permision Denied"))
+                    },
+                    _ => {
+                        println!("{}Error reading sessions file {}", color::Fg(color::Red), error.to_string());
+                        Err(Error::new(ErrorKind::InvalidData, "File read error not expected"))
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn validate(&self, sessid: &String) -> bool {
+        match self.sessions.get(sessid) {
+            Some(session) => return true,
             None => return false,
         }
     }
@@ -65,6 +105,7 @@ impl Sessions {
     pub fn invalidate(&mut self, sessid: &String)
     {
         self.sessions.remove(sessid);
+        self.save();
     }
 
     pub fn create(&mut self, sessid: String, username: String, ip: String)
@@ -74,6 +115,19 @@ impl Sessions {
             ip: ip,
             date: chrono::offset::Utc::now(),
         });
+        self.save();
+    }
+
+    fn save(&self) {
+        match serde_json::to_string(self) {
+            Ok(json) => {
+                match write_json("data/auth/sessions.json", json) {
+                    Ok(_) => println!("{}Sessions file saved", color::Fg(color::Cyan)),
+                    Err(_) => println!("{}Failed to save sessions file", color::Fg(color::Red)),
+                }
+            },
+            Err(_) => println!("{}Failed to serialize sessions file", color::Fg(color::Red))
+        }
     }
 }
 

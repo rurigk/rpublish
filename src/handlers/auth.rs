@@ -1,4 +1,4 @@
-use actix_web::{HttpMessage, HttpRequest, HttpResponse, Responder, cookie::Cookie, web};
+use actix_web::{HttpMessage, HttpRequest, HttpResponse, Responder, cookie::Cookie, http, web};
 use std::{fs, sync::Mutex};
 use crate::rpublish;
 
@@ -26,19 +26,17 @@ pub async fn home(app: web::Data<Mutex<rpublish::RPublishApp>>) -> HttpResponse 
 pub async fn login(req: HttpRequest, app: web::Data<Mutex<rpublish::RPublishApp>>) -> impl Responder {
     // Aquire app reference
     let app = app.lock().unwrap();
-    let remote_ip = req.connection_info().remote_addr().unwrap_or_default().to_string();
 
     if let Some(sessid_cookie) = req.cookie("SESSID") {
-        if app.identity_manager.sessions.validate(&sessid_cookie.value().to_string(), &remote_ip)
+        if app.identity_manager.sessions.validate(&sessid_cookie.value().to_string())
         {
-            println!("Session id: {}", sessid_cookie.value().to_string());
             return HttpResponse::TemporaryRedirect()
                 .header("Location", "/dashboard")
                 .finish()
         }
     }
 
-    match fs::read_to_string("assets/templates/login.template") {
+    match fs::read_to_string("assets/templates/login.html") {
         Ok(login_template) => HttpResponse::Ok().body(login_template),
         Err(_) => HttpResponse::InternalServerError().body("Failed to read template"),
     }
@@ -53,9 +51,8 @@ pub async fn login_post(
     let remote_ip = req.connection_info().remote_addr().unwrap_or_default().to_string();
 
     if let Some(sessid_cookie) = req.cookie("SESSID") {
-        if app.identity_manager.sessions.validate(&sessid_cookie.value().to_string(), &remote_ip)
+        if app.identity_manager.sessions.validate(&sessid_cookie.value().to_string())
         {
-            println!("Session id: {}", sessid_cookie.value().to_string());
             return HttpResponse::TemporaryRedirect().header("Location", "/dashboard").finish()
         }
     }
@@ -80,14 +77,15 @@ pub async fn login_post(
                     );
 
                     let cookie = Cookie::build("SESSID", sessid)
+                        .path("/")
                         .secure(true)
                         .http_only(true)
                         .finish();
 
-                    HttpResponse::TemporaryRedirect()
+                    HttpResponse::Found()
                         .cookie(cookie)
-                        .header("Location", "/dashboard")
-                        .finish()
+                        .header(http::header::LOCATION, "/dashboard")
+                        .finish().into_body()
                 },
                 Err(_) => HttpResponse::Unauthorized().body("Invalid credentials"),
             }
@@ -101,12 +99,11 @@ pub async fn login_post(
 pub async fn logout(req: HttpRequest, app: web::Data<Mutex<rpublish::RPublishApp>>) -> impl Responder {
     // Aquire app reference
     let mut app = app.lock().unwrap();
-    let remote_ip = req.connection_info().remote_addr().unwrap_or_default().to_string();
 
     match req.cookie("SESSID") {
         Some(sessid_cookie) => {
             let sessid = sessid_cookie.value().to_string();
-            if app.identity_manager.sessions.validate(&sessid, &remote_ip)
+            if app.identity_manager.sessions.validate(&sessid)
             {
                 app.identity_manager.sessions.invalidate(&sessid);
 

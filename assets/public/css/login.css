@@ -4,7 +4,7 @@ html {
 
 body {
     height: 100%;
-    background: linear-gradient(#90D9EC, #90D9EC), linear-gradient(#EEE, #EEE);
+    background: linear-gradient(var(--accent-bg), var(--accent-bg)), var(--main-bg);
     background-repeat: no-repeat;
     background-size: 100% 45%, 100% 55%;
     background-position: 0% 0%, 0% 100%;
@@ -21,8 +21,8 @@ body {
 
 .login-box {
     box-sizing: border-box;
-    background-color: #FFF;
-    width: 500px;
+    background-color: var(--primary-bg);
+    width: 450px;
     height: 550px;
     border-radius: 10px;
     box-shadow: 0px 0px 100px 1px rgba(0, 0, 0, 0.1);
@@ -33,7 +33,7 @@ body {
 }
 
 .login-box-input-box {
-    width: 80%;
+    width: 90%;
     display: flex;
     align-items: flex-start;
     flex-direction: column;
@@ -41,7 +41,7 @@ body {
 
 .login-box-input-box label {
     font-size: 1.1em;
-    color: #666;
+    color: var(--secondary-text);
     margin-bottom: 8px;
 }
 
@@ -56,11 +56,13 @@ input[type="text"], input[type="password"] {
 
 .login-button {
     font-size: 1.6em;
-    background-color: #90D9EC;
-    color: #FFF;
+    background-color: var(--accent-bg);
+    color: var(--contrast-text);
     border: transparent;
     padding: 12px 18px;
     margin-top: 18px;
     cursor: pointer;
     border-radius: 6px;
+    width: 90%;
+    box-sizing: border-box;
 }

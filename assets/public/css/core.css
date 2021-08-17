@@ -1,8 +1,21 @@
 * {
+    /* Fonts */
     font-family: Arial, Helvetica, sans-serif;
+
+    /* Background colors */
+    --main-bg: #EEE;
+    --primary-bg: #FFF;
+    --secondary-bg: #EEE;
+    --accent-bg: #90D9EC;
+
+    /* Text colors */
+    --primary-text: #333;
+    --contrast-text: #FFF;
+    --secondary-text: #666;
 }
+
 
 body{
     margin: 0px;
-    background-color: #DDD;
+    background-color: var(--main-bg);
 }

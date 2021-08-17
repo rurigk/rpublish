@@ -6,7 +6,6 @@ use termion::{color};
 mod helpers; // Initialization routines
 mod rpublish; // RPublish system
 
-mod routes;
 mod handlers;
 
 #[actix_web::main]
@@ -31,6 +30,7 @@ async fn main() -> std::io::Result<()> {
         ))
         .service(web::scope("/auth").configure(handlers::auth::configure))
         .service(web::scope("/api").configure(handlers::api::configure))
+        .service(web::scope("/dashboard").configure(handlers::dashboard::configure))
         .service(
             actix_files::Files::new("/public", "assets/public")
                 .show_files_listing()

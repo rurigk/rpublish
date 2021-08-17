@@ -1,0 +1,15 @@
+html, body {
+    height: 100%;
+}
+
+.app {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    grid-template-rows: 1fr;
+
+    height: 100%;
+}
+
+.sidebar {
+    background-color: var(--primary-bg);
+}
