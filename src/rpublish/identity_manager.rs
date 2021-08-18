@@ -30,8 +30,8 @@ impl IdentityManager {
                 match Sessions::load_sessions() {
                     Ok(sessions) => {
                         Self {
-                            users: users,
-                            sessions: sessions
+                            users,
+                            sessions
                         }
                     },
                     Err(_) => panic!("{}Failed loading sessions!", color::Fg(color::Red))
@@ -48,12 +48,6 @@ pub struct Sessions {
 }
 
 impl Sessions {
-    fn new() -> Self {
-        Self{
-            sessions: HashMap::new()
-        }
-    }
-
     pub fn load_sessions() -> Result<Self, std::io::Error> {
         let path = Path::new("data/auth/sessions.json");
         match File::open(path) {
@@ -76,7 +70,7 @@ impl Sessions {
                 match error.kind() {
                     ErrorKind::NotFound => {
                         println!("{}Sessions file Not Found, Creating one", color::Fg(color::Cyan));
-                        let mut new_sessions = Self{
+                        let new_sessions = Self{
                             sessions: HashMap::new()
                         };
                         new_sessions.save();
@@ -95,14 +89,11 @@ impl Sessions {
         }
     }
 
-    pub fn validate(&self, sessid: &String) -> bool {
-        match self.sessions.get(sessid) {
-            Some(session) => return true,
-            None => return false,
-        }
+    pub fn validate(&self, sessid: &str) -> bool {
+        self.sessions.get(sessid).is_some()
     }
 
-    pub fn invalidate(&mut self, sessid: &String)
+    pub fn invalidate(&mut self, sessid: &str)
     {
         self.sessions.remove(sessid);
         self.save();
@@ -111,8 +102,8 @@ impl Sessions {
     pub fn create(&mut self, sessid: String, username: String, ip: String)
     {
         self.sessions.insert(sessid, Session{
-            username: username,
-            ip: ip,
+            username,
+            ip,
             date: chrono::offset::Utc::now(),
         });
         self.save();
@@ -209,7 +200,7 @@ impl Users {
     fn read_input(text: &str) -> String {
         let mut data : String = String::new();
         print!("    {}{}{}{}{}{}", style::Reset, style::Bold, color::Fg(color::Yellow), text, style::Reset, style::Bold);
-        stdout().flush().ok().expect("Could not flush stdout");
+        stdout().flush().expect("Could not flush stdout");
         stdin().read_line(&mut data).expect("Error: unable to read user input");
         data.trim().to_string()
     }
@@ -217,7 +208,7 @@ impl Users {
     fn read_input_hidden(text: &str) -> Option<String> {
         let mut stdout = stdout();
         print!("\n    {}{}{}{}{}{}", style::Reset, style::Bold, color::Fg(color::Yellow), text, style::Reset, style::Bold);
-        stdout.flush().ok().expect("Could not flush stdout");
+        stdout.flush().expect("Could not flush stdout");
         stdin().read_passwd(&mut stdout).expect("Error: unable to read user input")
     }
 
@@ -262,6 +253,7 @@ impl Users {
         }
     }
 
+    #[allow(dead_code)]
     pub fn delete(&mut self, username: &str, password: &str) -> Result<(), IdentityError> {
         match self.get(username) {
             Ok(user) => {

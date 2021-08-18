@@ -7,30 +7,39 @@ pub fn configure (cfg: &mut web::ServiceConfig)
 	cfg.route("", web::get().to(dashboard));
 }
 
-pub async fn dashboard(req: HttpRequest, app: web::Data<Mutex<rpublish::RPublishApp>>) -> impl Responder {
-    // Aquire app reference
-    let app = app.lock().unwrap();
+pub async fn dashboard() -> impl Responder {
+    HttpResponse::Ok().body(get_dashboard(&String::from("dashboard")))
+}
 
-    if !logged_in(&req, &app) {
-        return HttpResponse::TemporaryRedirect()
-            .header("Location", "/auth")
-            .finish()
-    }
-
+fn get_dashboard(section: &str) -> String
+{
     match fs::read_to_string("assets/templates/dashboard.html") {
-        Ok(login_template) => HttpResponse::Ok().body(login_template),
-        Err(_) => HttpResponse::InternalServerError().body("Failed to read template"),
+        Ok(login_template) => {
+            let login_template = login_template.replace(
+                "{{dashboard_items}}", 
+                get_dashboard_items().as_str()
+            ).replace(
+                "{{section_content}}", 
+                get_dashboard_section(section).as_str()
+            );
+            login_template
+        },
+        Err(_) => String::new(),
     }
 }
 
-pub fn logged_in(req: &HttpRequest, app: &MutexGuard<RPublishApp>) -> bool{
-    if let Some(sessid_cookie) = req.cookie("SESSID") {
-        if app.identity_manager.sessions.validate(&sessid_cookie.value().to_string())
-        {
-            return true;
-        }
-        return false;
-    } else {
-        false
+fn get_dashboard_section(section: &str) -> String
+{
+    match fs::read_to_string(format!("assets/templates/dashboard/{}.html", section)) {
+        Ok(login_template) => login_template,
+        Err(_) => String::new(),
+    }
+}
+
+fn get_dashboard_items() -> String
+{
+    match fs::read_to_string("assets/templates/dashboard_sidebar_items.html") {
+        Ok(login_template) => login_template,
+        Err(_) => String::new(),
     }
 }

@@ -18,7 +18,7 @@ pub async fn home(app: web::Data<Mutex<rpublish::RPublishApp>>) -> HttpResponse 
     // Aquire app reference
     let mut _app = app.lock().unwrap();
 
-    HttpResponse::TemporaryRedirect()
+    HttpResponse::Found()
         .header("Location", "/auth/login")
         .finish()
 }
@@ -53,7 +53,7 @@ pub async fn login_post(
     if let Some(sessid_cookie) = req.cookie("SESSID") {
         if app.identity_manager.sessions.validate(&sessid_cookie.value().to_string())
         {
-            return HttpResponse::TemporaryRedirect().header("Location", "/dashboard").finish()
+            return HttpResponse::Forbidden().header("Location", "/dashboard").finish()
         }
     }
 

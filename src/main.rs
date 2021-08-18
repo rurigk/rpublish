@@ -1,5 +1,5 @@
-use std::sync::Mutex;
-use actix_web::{web, App, HttpServer, middleware};
+use std::sync::{Mutex};
+use actix_web::{App, HttpServer, web};
 extern crate termion;
 use termion::{color};
 
@@ -7,6 +7,7 @@ mod helpers; // Initialization routines
 mod rpublish; // RPublish system
 
 mod handlers;
+mod middleware;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -25,12 +26,16 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
         .app_data( data.clone() )
-        .wrap( middleware::NormalizePath::new(
-            middleware::normalize::TrailingSlash::Trim
+        .wrap( actix_web::middleware::NormalizePath::new(
+            actix_web::middleware::normalize::TrailingSlash::Trim
         ))
         .service(web::scope("/auth").configure(handlers::auth::configure))
         .service(web::scope("/api").configure(handlers::api::configure))
-        .service(web::scope("/dashboard").configure(handlers::dashboard::configure))
+        .service(
+            web::scope("/dashboard")
+                .configure(handlers::dashboard::configure)
+                .wrap(middleware::auth::LoggedIn)
+        )
         .service(
             actix_files::Files::new("/public", "assets/public")
                 .show_files_listing()

@@ -10,8 +10,17 @@
     </head>
     <body>
         <div class="app">
-            <div class="sidebar"></div>
-            <div class="content"></div>
+            <div class="sidebar">
+                <div class="sidebar-section logo">
+                    <img src="/public/images/logo.png" alt="logo" >
+                </div>
+                <div class="sidebar-section sidebar-items">
+                    {{dashboard_items}}
+                </div>
+            </div>
+            <div class="content">
+                {{section_content}}
+            </div>
         </div>
     </body>
 </html>

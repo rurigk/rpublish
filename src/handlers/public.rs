@@ -11,5 +11,5 @@ pub async fn home(app: web::Data<Mutex<rpublish::RPublishApp>>) -> impl Responde
     // Aquire app reference
     let mut _app = app.lock().unwrap();
 
-    format!("home")
+    "home".to_string()
 }

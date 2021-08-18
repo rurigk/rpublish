@@ -13,3 +13,27 @@ html, body {
 .sidebar {
     background-color: var(--primary-bg);
 }
+
+.sidebar-section {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.logo {
+    background-color: var(--accent-bg);
+    padding-bottom: 0px;
+}
+
+.logo img {
+    width: 80%;
+}
+
+.sidebar-items {
+    margin-top: 20px;
+}
+
+.dashboard-sidebar-item {
+    background-color: var(--accent-bg);
+}
