@@ -4,11 +4,21 @@ use crate::rpublish::{self, RPublishApp};
 
 pub fn configure (cfg: &mut web::ServiceConfig)
 {
-	cfg.route("", web::get().to(dashboard));
+	cfg .route("", web::get().to(dashboard))
+        .route("/articles", web::get().to(articles))
+        .route("/settings", web::get().to(settings));
 }
 
 pub async fn dashboard() -> impl Responder {
     HttpResponse::Ok().body(get_dashboard(&String::from("dashboard")))
+}
+
+pub async fn articles() -> impl Responder {
+    HttpResponse::Ok().body(get_dashboard(&String::from("articles")))
+}
+
+pub async fn settings() -> impl Responder {
+    HttpResponse::Ok().body(get_dashboard(&String::from("settings")))
 }
 
 fn get_dashboard(section: &str) -> String

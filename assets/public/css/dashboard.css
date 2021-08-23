@@ -17,7 +17,7 @@ html, body {
 .sidebar-section {
     display: flex;
     justify-content: center;
-    padding: 20px;
+    padding: 10px;
     box-sizing: border-box;
 }
 
@@ -31,9 +31,34 @@ html, body {
 }
 
 .sidebar-items {
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
-.dashboard-sidebar-item {
+.dashboard-sidebar-links {
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+}
+
+.dashboard-sidebar-link {
+    background-color: transparent;
+    color: var(--low-contrast-text);
+    border: none;
+    padding: 12px;
+    font-size: 1.3em;
+    text-align: left;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.dashboard-sidebar-link:hover {
     background-color: var(--accent-bg);
+    color: var(--contrast-text);
+    font-weight: bold;
+}
+
+.dashboard-sidebar-link span {
+    margin-left: 5px;
+    margin-right: 8px;
 }
