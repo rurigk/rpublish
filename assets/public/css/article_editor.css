@@ -1,0 +1,11 @@
+#rpusblish-editor {
+    background-color: var(--primary-bg);
+    margin-top: 50px;
+    width: 740px;
+    padding: 30px 10px;
+}
+
+.center-editor {
+    display: flex;
+    justify-content: center;
+}
