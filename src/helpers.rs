@@ -126,3 +126,12 @@ pub fn write_json(file_path: &str, content: String) -> Result<()>
         }
     }
 }
+
+pub fn move_file(origin_path: &str, target_path: &str) -> Result<()> {
+    match fs::copy(origin_path, target_path) {
+        Ok(_) => {
+            Ok(())
+        },
+        Err(error) => Err(error),
+    }
+}
