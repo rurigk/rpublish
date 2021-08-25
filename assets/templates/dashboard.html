@@ -4,10 +4,11 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+        <title>{{title}}</title>
         <link rel="stylesheet" href="/public/css/core.css">
         <link rel="stylesheet" href="/public/css/dashboard.css">
         <link rel="stylesheet" href="/public/css/material-font.css">
-        <title>Document</title>
     </head>
     <body>
         <div class="app">
@@ -19,8 +20,35 @@
                     {{dashboard_items}}
                 </div>
             </div>
-            <div class="content">
-                {{section_content}}
+            <div class="main">
+                <div class="topbar">
+                    <div class="search-box-container">
+                        <input type="text" class="search-box" placeholder="Search Articles, Sections and Settings">
+                        <a href="/dashboard/article/new">
+                            <div class="navbar-button icon add-article-button">
+                                <span class="mdi mdi-plus"></span>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="page-indicators">
+                        
+                        <div class="navbar-button icon notifications-button">
+                            <span class="mdi mdi-bell"></span>
+                        </div>
+                        <div class="navbar-button icon activity-box">
+                            <span class="mdi mdi-eye"></span>
+                        </div>
+                        <div class="user-nav">
+                            <div>Hello, Rurigk</div>
+                            <div class="user-nav-avatar-box">
+                                <img class="user-nav-avatar" src="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content">
+                    {{section_content}}
+                </div>
             </div>
         </div>
     </body>
