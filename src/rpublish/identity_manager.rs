@@ -175,7 +175,10 @@ impl Users {
                                 .ok_or_else(|| std::io::Error::from(ErrorKind::InvalidInput))?;
 
                             if user_password == user_password_repeat {
-                                new_users.users.push(User::new(user_name.trim(), user_password.trim()));
+                                let mut new_user = User::new(user_name.trim(), user_password.trim());
+                                new_user.set_permission(UserPermissions::Admin);
+                                new_user.set_permission(UserPermissions::Editor);
+                                new_users.users.push(new_user);
                                 break;
                             }
                         }
@@ -271,6 +274,14 @@ impl Users {
     }
 }
 
+#[allow(dead_code)]
+#[derive(Serialize, Deserialize, PartialEq, Eq)]
+pub enum UserPermissions
+{
+    Admin,
+    Editor
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct User
 {
@@ -278,7 +289,9 @@ pub struct User
     password_hash: String,
     password_update_date: DateTime<Utc>,
     created_date: DateTime<Utc>,
-    last_login_date: DateTime<Utc>
+    last_login_date: DateTime<Utc>,
+    enabled: bool,
+    permissions: Vec<UserPermissions>
 }
 
 impl User {
@@ -289,6 +302,8 @@ impl User {
             password_update_date: chrono::offset::Utc::now(),
             created_date: chrono::offset::Utc::now(),
             last_login_date: chrono::offset::Utc::now(),
+            enabled: true,
+            permissions: Vec::new(),
         }
     }
 
@@ -312,6 +327,12 @@ impl User {
             },
         }
     }
+
+    pub fn set_permission(&mut self, permission: UserPermissions) {
+        if !self.permissions.contains(&permission) {
+            self.permissions.push(permission);
+        }
+    }
 }
 
 #[allow(dead_code)]
@@ -330,6 +351,6 @@ pub struct IdentityError {
 
 impl fmt::Display for IdentityError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "invalid first item to double")
+        write!(f, "Indentity Error")
     }
 }
