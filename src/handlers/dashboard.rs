@@ -23,10 +23,19 @@ pub async fn settings() -> impl Responder {
     HttpResponse::Ok().body(get_dashboard("Settings",  &String::from("settings")))
 }
 
-pub async fn new_article(app: web::Data<Mutex<rpublish::RPublishApp>>) -> impl Responder {
+pub async fn new_article(
+    req: HttpRequest,
+    app: web::Data<Mutex<rpublish::RPublishApp>>
+) -> impl Responder {
     let mut app = app.lock().unwrap();
+    let sessid = req.cookie("SESSID").unwrap().value().to_string();
+
     let uuid = Uuid::new_v4().to_simple();
-    app.articles_manager.create(uuid.to_string().as_str());
+    let username = app.identity_manager.sessions.get_user(&sessid).unwrap();
+    app.articles_manager.create(
+        uuid.to_string().as_str(), 
+        username.as_str()
+    );
     // HttpResponse::Ok().body(get_dashboard("New Article",  &String::from("new_article")))
     HttpResponse::Found()
         .header(http::header::LOCATION, format!("{}{}", "/dashboard/article/edit/", uuid) )
