@@ -40,7 +40,7 @@ window.addEventListener("load", () => {
                     class: ImageTool,
                     config: {
                         endpoints: {
-                            byFile: `${location.protocol}://${location.hostname}/dashboard/endpoint/uploadFile`, // Your backend file uploader endpoint
+                            byFile: `${location.protocol}://${location.host}/dashboard/endpoint/uploadFile`, // Your backend file uploader endpoint
                         },
                         uploader: {
                             uploadByUrl(url){
@@ -60,7 +60,7 @@ window.addEventListener("load", () => {
                 attaches: {
                     class: AttachesTool,
                     config: {
-                        endpoint: `${location.protocol}://${location.hostname}/dashboard/endpoint/fileUpload`
+                        endpoint: `${location.protocol}://${location.host}/dashboard/endpoint/fileUpload`
                     }
                 },          
                 code: CodeTool,
