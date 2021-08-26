@@ -1,14 +1,19 @@
 use actix_web::{HttpMessage, HttpRequest, HttpResponse, Responder, http, web};
 use uuid::Uuid;
-use std::{fs, sync::{Mutex, MutexGuard}};
-use crate::rpublish::{self, RPublishApp};
+use std::{fs, sync::{Mutex}};
+use serde::{Serialize, Deserialize};
+use crate::rpublish::{self};
 
 pub fn configure (cfg: &mut web::ServiceConfig)
 {
 	cfg .route("", web::get().to(dashboard))
         .route("/articles", web::get().to(articles))
         .route("/settings", web::get().to(settings))
-        .route("/article/new", web::get().to(new_article));
+        .route("/article/new", web::get().to(new_article))
+        .route("/article/edit/{article_id}", web::get().to(edit_article_view))
+        // Dashboard api
+        .route("/api/article/{article_id}", web::get().to(api_get_article))
+        .route("/api/article/{article_id}", web::put().to(api_update_article));
 }
 
 pub async fn dashboard() -> impl Responder {
@@ -42,11 +47,31 @@ pub async fn new_article(
         .finish().into_body()
 }
 
-fn get_dashboard(title: &str, section: &str) -> String
-{
+pub async fn edit_article_view(
+    app: web::Data<Mutex<rpublish::RPublishApp>>,
+    info: web::Path<String>
+) -> impl Responder {
+    let mut app = app.lock().unwrap();
+    let article_id: String = info.into_inner();
+    match app.articles_manager.read_latest(&article_id) {
+        Some(_) => {
+            HttpResponse::Ok().body(get_dashboard(
+                format!("Edit: {}", article_id).as_str(), 
+                 &String::from("edit_article")
+            ))
+        },
+        None => {
+            HttpResponse::Found()
+                .header(http::header::LOCATION,  "/dashboard/articles/" )
+                .finish().into_body()
+        },
+    }
+}
+
+fn get_dashboard(title: &str, section: &str) -> String {
     match fs::read_to_string("assets/templates/dashboard.html") {
-        Ok(login_template) => {
-            let login_template = login_template.replace(
+        Ok(dashboard_template) => {
+            let dashboard_template = dashboard_template.replace(
                 "{{title}}", 
                 title
             ).replace(
@@ -56,24 +81,65 @@ fn get_dashboard(title: &str, section: &str) -> String
                 "{{section_content}}", 
                 get_dashboard_section(section).as_str()
             );
-            login_template
+            dashboard_template
         },
         Err(_) => String::new(),
     }
 }
 
-fn get_dashboard_section(section: &str) -> String
-{
+fn get_dashboard_section(section: &str) -> String {
     match fs::read_to_string(format!("assets/templates/dashboard/{}.html", section)) {
-        Ok(login_template) => login_template,
+        Ok(section_template) => section_template,
         Err(_) => String::new(),
     }
 }
 
-fn get_dashboard_items() -> String
-{
+fn get_dashboard_items() -> String {
     match fs::read_to_string("assets/templates/dashboard_sidebar_items.html") {
-        Ok(login_template) =>  login_template,
+        Ok(items_template) =>  items_template,
         Err(_) => String::new(),
+    }
+}
+
+fn api_get_article (
+    app: web::Data<Mutex<rpublish::RPublishApp>>, 
+    info: web::Path<String>
+) -> HttpResponse {
+    let app = app.lock().unwrap();
+    let article_id: String = info.into_inner();
+
+    match app.articles_manager.read_latest(&article_id) {
+        Some(article) => {
+            HttpResponse::Ok().json(article)
+        },
+        None => {
+            HttpResponse::NotFound().finish()
+        },
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ArticleUpdate {
+    title: String,
+    data: String
+}
+
+fn api_update_article (
+    app: web::Data<Mutex<rpublish::RPublishApp>>, 
+    info: web::Path<String>,
+    article_update: web::Json<ArticleUpdate>
+) -> HttpResponse {
+    let mut app = app.lock().unwrap();
+    let article_id: String = info.into_inner();
+
+    println!("api_update_article {}", &article_id);
+
+    match app.articles_manager.update(&article_id, &article_update.title, &article_update.data) {
+        Ok(_) => {
+            HttpResponse::Ok().finish()
+        },
+        Err(_) => {
+            HttpResponse::NotFound().finish()
+        },
     }
 }
