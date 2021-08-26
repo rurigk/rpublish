@@ -25,6 +25,11 @@
     --generic-button-text: #666;
     --generic-button-text-hover: #5CF;
 
+    --normal-button-bg: #43B8F2;
+    --normal-button-bg-hover: #4CF;
+    --normal-button-text: #FFF;
+    --normal-button-text-hover: #FFF;
+
     --contrast-button-bg: #DDD;
 }
 
