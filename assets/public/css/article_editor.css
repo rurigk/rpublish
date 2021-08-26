@@ -1,11 +1,46 @@
 #rpusblish-editor {
     background-color: var(--primary-bg);
-    margin-top: 50px;
+    margin-top: 20px;
     width: 740px;
     padding: 30px 10px;
 }
 
 .center-editor {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.editor-section {
+    width: 760px;
+    margin-top: 20px;
+}
+
+.editor-section.right-align {
+    display: flex;
+    justify-content: right;
+}
+
+.article-title {
+    width: 100%;
+    font-size: 1.1em;
+    border: 1px solid transparent;
+    box-sizing: border-box;
+    padding: 10px;
+    outline: none;
+    color: var(--primary-text);
+}
+
+.publish-button {
+    font-size: 1.3em;
+    background: var(--normal-button-bg);
+    color: var(--normal-button-text);
+    padding: 8px 12px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.publish-button:hover {
+    background: var(--normal-button-bg-hover);
 }
