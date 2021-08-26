@@ -34,6 +34,9 @@ fn setup_directories_structure() -> bool{
 
     // System cache
     if !graceful_mkdir("data/cache") {return false;}
+    if !graceful_mkdir("data/cache/metadata") {return false;}
+    if !graceful_mkdir("data/cache/metadata/published") {return false;}
+    if !graceful_mkdir("data/cache/metadata/draft") {return false;}
     if !graceful_mkdir("data/cache/search") {return false;}
     if !graceful_mkdir("data/cache/stats") {return false;}
 
