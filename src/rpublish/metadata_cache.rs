@@ -1,5 +1,4 @@
 use std::{collections::HashMap, fs};
-use actix_web::guard::Options;
 use serde::{Serialize, Deserialize};
 use std::path::PathBuf;
 
@@ -20,6 +19,7 @@ impl MetadataCache {
         Self::load_from_disk(path)
     }
 
+    // Load existing cache files
     fn load_from_disk(path: PathBuf) -> MetadataCache {
         match fs::read_dir(&path) {
             Ok(metadata_files) => {
@@ -59,6 +59,7 @@ impl MetadataCache {
         }
     }
 
+    // Save cache to disk
     pub fn save_to_disk (&self) {
         for (article_id, article_metadata) in &self.articles {
             match serde_json::to_string(article_metadata) {
@@ -75,12 +76,40 @@ impl MetadataCache {
         }
     }
 
+    // Metadata cache methods
+
+    // Check if article has metadata cached
     pub fn is_cached(&self, article_id: &str) -> bool {
         self.articles.contains_key(article_id)
     }
-
-    pub fn get_cache_of(&self, article_id: &str) -> Option<&ArticleMetadata> {
+    
+    // Get metadata of article
+    pub fn get_metadata(&self, article_id: &str) -> Option<&ArticleMetadata> {
         self.articles.get(article_id)
+    }
+
+    // Add or update article metadata
+    pub fn set_metadata(&mut self, article_id: &str, article: &Article) {
+        if self.articles.contains_key(article_id) {
+            match self.articles.get_mut(article_id) {
+                Some(metadata) => {
+                    metadata.title = article.title.to_owned();
+                    metadata.author = article.author.to_owned();
+                    metadata.tags = article.tags.to_owned();
+                    self.save_to_disk();
+                }
+                None => {
+                    println!("Cannot get a mutable ref to article metadata");
+                },
+            }
+        } else {
+            self.articles.insert(article_id.to_string(), ArticleMetadata {
+                title: article.title.to_owned(),
+                author: article.author.to_owned(),
+                tags: article.tags.to_owned(),
+            });
+            self.save_to_disk();
+        }
     }
 }
 
