@@ -104,6 +104,7 @@ window.addEventListener("load", () => {
 
         publish_button.addEventListener("click", () => {
             // Publish the article
+            publish_article(article_id)
         })
     }).catch(() => {
         console.log("Not found")
@@ -165,4 +166,26 @@ function save_draft(article_id, title, data) {
     }).catch((err) => {
         console.log("Draft not saved saved: Network error", err);
     })
+}
+
+function publish_article (article_id) {
+    fetch(`${location.protocol}//${location.host}/dashboard/api/article/${article_id}/publish`, {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer'
+    }).then((response) => {
+        if (response.status == 200) {
+            alert("Published");
+        } else {
+            alert("Error publishing the article");
+        }
+    }).catch((err) => {
+        alert("Error publishing the article");
+    })    
 }
