@@ -13,7 +13,11 @@ pub fn configure (cfg: &mut web::ServiceConfig)
         .route("/article/edit/{article_id}", web::get().to(edit_article_view))
         // Dashboard api
         .route("/api/article/{article_id}", web::get().to(api_get_article))
-        .route("/api/article/{article_id}", web::put().to(api_update_article));
+        .route("/api/article/{article_id}", web::put().to(api_update_article))
+        .route("/api/article/{article_id}/publish", web::post().to(api_publish_article))
+        
+        .route("/api/articles/draft", web::get().to(api_list_draft_articles))
+        .route("/api/articles/published", web::get().to(api_list_published_articles));
 }
 
 pub async fn dashboard() -> impl Responder {
@@ -101,6 +105,24 @@ fn get_dashboard_items() -> String {
     }
 }
 
+fn api_list_draft_articles (
+    app: web::Data<Mutex<rpublish::RPublishApp>>
+) -> HttpResponse {
+    let mut  app = app.lock().unwrap();
+    let articles = app.articles_manager.list_draft_articles();
+
+    HttpResponse::Ok().json(articles)
+}
+
+fn api_list_published_articles (
+    app: web::Data<Mutex<rpublish::RPublishApp>>
+) -> HttpResponse {
+    let mut  app = app.lock().unwrap();
+    let articles = app.articles_manager.list_published_articles();
+
+    HttpResponse::Ok().json(articles)
+}
+
 fn api_get_article (
     app: web::Data<Mutex<rpublish::RPublishApp>>, 
     info: web::Path<String>
@@ -135,6 +157,23 @@ fn api_update_article (
     println!("api_update_article {}", &article_id);
 
     match app.articles_manager.update(&article_id, &article_update.title, &article_update.data) {
+        Ok(_) => {
+            HttpResponse::Ok().finish()
+        },
+        Err(_) => {
+            HttpResponse::NotFound().finish()
+        },
+    }
+}
+
+fn api_publish_article (
+    app: web::Data<Mutex<rpublish::RPublishApp>>, 
+    info: web::Path<String>
+) -> HttpResponse {
+    let mut app = app.lock().unwrap();
+    let article_id: String = info.into_inner();
+
+    match app.articles_manager.publish(&article_id) {
         Ok(_) => {
             HttpResponse::Ok().finish()
         },
