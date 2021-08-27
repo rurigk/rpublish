@@ -4,14 +4,15 @@ use std::{fmt, fs};
 use std::path::Path;
 
 extern crate termion;
-use actix_web::guard::Options;
-use termion::{color, style};
+use termion::{color};
 
 use crate::rpublish::metadata_cache::MetadataCache;
 use crate::rpublish::articles_cache::ArticlesCache;
 
 use self::article::Article;
-use crate::helpers::write_json;
+use crate::helpers::{write_json, move_file};
+
+use super::metadata_cache::ArticleMetadata;
 
 pub struct ArticlesManager{
     // Metadata
@@ -24,7 +25,10 @@ pub struct ArticlesManager{
 }
 impl ArticlesManager {
     pub fn new() -> ArticlesManager {
-        Self::load_articles()
+        let mut manager = Self::load_articles();
+        manager.build_draft_metadata();
+        manager.build_published_metadata();
+        manager
     }
 
     fn load_articles() -> ArticlesManager {
@@ -40,7 +44,7 @@ impl ArticlesManager {
         }
     }
 
-    fn read_ids(path: &Path) -> Vec<String>{
+    fn read_ids(path: &Path) -> Vec<String> {
         match fs::read_dir(path) {
             Ok(published_files) => {
                 let mut ids: Vec<String> = Vec::new();
@@ -61,21 +65,74 @@ impl ArticlesManager {
         }
     }
 
-    pub fn create(&mut self, article_id: &str, author: &str) {
-        let new_article = Article {
-            title: String::from("Draft Article"),
-            author: String::from(author),
-            tags: Vec::new(),
-            data: String::new(),
-            created_date: chrono::offset::Utc::now(),
-            update_date: chrono::offset::Utc::now(),
-        };
+    fn build_draft_metadata (&mut self) {
+        for article_id in &self.draft_list {
+            if !self.draft_metadata_cache.is_cached(article_id) {
+                match self.read_from(article_id, ArticleStatus::Draft) {
+                    Some(article) => {
+                        self.draft_metadata_cache.set_metadata(article_id, &article);
+                    },
+                    None => {},
+                }
+            }
+        }
+    }
 
-        self.save_article(article_id, &new_article, ArticleStatus::Draft);
+    fn build_published_metadata (&mut self) {
+        for article_id in &self.published_list {
+            if !self.published_metadata_cache.is_cached(article_id) {
+                match self.read_from(article_id, ArticleStatus::Published) {
+                    Some(article) => {
+                        self.published_metadata_cache.set_metadata(article_id, &article);
+                    },
+                    None => {},
+                }
+            }
+        }
+    }
+
+    fn rebuild_draft_metadata (&mut self, article_id: &str) {
+        match self.read_from(article_id, ArticleStatus::Draft) {
+            Some(article) => {
+                self.draft_metadata_cache.set_metadata(article_id, &article);
+            },
+            None => {},
+        }
     }
     
-    pub fn _list_published_articles (&mut self) {
-        
+    fn rebuild_published_metadata (&mut self, article_id: &str) {
+        match self.read_from(article_id, ArticleStatus::Published) {
+            Some(article) => {
+                self.published_metadata_cache.set_metadata(article_id, &article);
+            },
+            None => {},
+        }
+    }
+
+    pub fn list_draft_articles (&mut self) -> Vec<&ArticleMetadata> {
+        let mut articles_metadata: Vec<&ArticleMetadata> = Vec::new();
+        for article_id in &self.draft_list {
+            match &self.draft_metadata_cache.get_metadata(article_id) {
+                Some(metadata) => {
+                    articles_metadata.push(metadata);
+                },
+                None => {},
+            }
+        }
+        articles_metadata
+    }
+
+    pub fn list_published_articles (&mut self) -> Vec<&ArticleMetadata> {
+        let mut articles_metadata: Vec<&ArticleMetadata> = Vec::new();
+        for article_id in &self.published_list {
+            match &self.published_metadata_cache.get_metadata(article_id) {
+                Some(metadata) => {
+                    articles_metadata.push(metadata);
+                },
+                None => {},
+            }
+        }
+        articles_metadata
     }
 
     fn read_article (file_path: &str) -> Option<Article> {
@@ -94,7 +151,43 @@ impl ArticlesManager {
         }
     }
 
-    pub fn read_latest(&self, article_id: &str) -> Option<Article> {
+    fn save_article(&self, article_id: &str, article: &Article, status: ArticleStatus) {
+        match serde_json::to_string(article) {
+            Ok(json) => {
+                match status {
+                    ArticleStatus::Draft => {
+                        match write_json(format!("data/articles/draft/{}.json", article_id).as_str(), json) {
+                            Ok(_) => println!("{}Article draft saved", color::Fg(color::Cyan)),
+                            Err(_) => println!("{}Failed to save draft article file", color::Fg(color::Red)),
+                        }
+                    },
+                    ArticleStatus::Published => {
+                        match write_json(format!("data/articles/published/{}.json", article_id).as_str(), json) {
+                            Ok(_) => println!("{}Article saved to published", color::Fg(color::Cyan)),
+                            Err(_) => println!("{}Failed to save article to publishs", color::Fg(color::Red)),
+                        }
+                    }
+                }
+            },
+            Err(_) => println!("{}Failed to serialize users file", color::Fg(color::Red))
+        }
+    }
+
+    pub fn create(&mut self, article_id: &str, author: &str) {
+        let new_article = Article {
+            title: String::from("Draft Article"),
+            author: String::from(author),
+            tags: Vec::new(),
+            data: String::new(),
+            created_date: chrono::offset::Utc::now(),
+            update_date: chrono::offset::Utc::now(),
+        };
+
+        self.draft_metadata_cache.set_metadata(article_id, &new_article);
+        self.save_article(article_id, &new_article, ArticleStatus::Draft);
+    }
+
+    pub fn read_latest (&self, article_id: &str) -> Option<Article> {
         if self.draft_list.contains(&article_id.to_string()) {
             match Self::read_article(format!("data/articles/draft/{}.json", article_id).as_str()) {
                 Some(article) => {
@@ -112,8 +205,25 @@ impl ArticlesManager {
         }
     }
 
-    pub fn _read_metadata(&mut self, _article_id: &str) {
-
+    pub fn read_from (&self, article_id: &str, status: ArticleStatus) -> Option<Article>{
+        match status {
+            ArticleStatus::Draft => {
+                match Self::read_article(format!("data/articles/draft/{}.json", article_id).as_str()) {
+                    Some(article) => {
+                        return Some(article)
+                    },
+                    None => None,
+                }
+            },
+            ArticleStatus::Published => {
+                match Self::read_article(format!("data/articles/published/{}.json", article_id).as_str()) {
+                    Some(article) => {
+                        return Some(article)
+                    },
+                    None => None,
+                }
+            }
+        }
     }
 
     pub fn update(&mut self, article_id: &str, title: &str, data: &str) -> Result<(), ArticleError> {
@@ -122,7 +232,13 @@ impl ArticlesManager {
                 article.title = title.to_string();
                 article.data = data.to_string();
                 article.update_date = chrono::offset::Utc::now();
+                self.draft_metadata_cache.set_metadata(article_id, &article);
                 self.save_article(article_id, &article, ArticleStatus::Draft);
+
+                let article_id_string = article_id.to_string();
+                if !self.draft_list.contains(&article_id_string) {
+                    self.draft_list.push(article_id_string);
+                }
                 Ok(())
             },
             None => {
@@ -133,35 +249,33 @@ impl ArticlesManager {
         }
     }
 
-    pub fn _delete(&mut self, _article_id: &str) {
+    pub fn _delete(&mut self, article_id: &str, status: ArticleStatus) {
 
     }
 
-    fn save_article(&self, article_id: &str, article: &Article, status: ArticleStatus) {
-        match serde_json::to_string(article) {
-            Ok(json) => {
-                match status {
-                    ArticleStatus::Draft => {
-                        match write_json(format!("data/articles/draft/{}.json", article_id).as_str(), json) {
-                            Ok(_) => println!("{}Article draft saved", color::Fg(color::Cyan)),
-                            Err(_) => println!("{}Failed to save draft article file", color::Fg(color::Red)),
-                        }
+    pub fn publish(&mut self, article_id: &str) -> Result<(), std::io::Error>{
+        match move_file(
+            format!("data/articles/draft/{}.json", article_id).as_str(),
+            format!("data/articles/published/{}.json", article_id).as_str()
+        ) {
+            Ok(_) => {
+                let article_id_string = article_id.to_string();
+
+                match self.draft_list.iter().position(|x| x == &article_id_string) {
+                    Some(id_index) => {
+                        self.draft_list.remove(id_index);
                     },
-                    ArticleStatus::Published => {
-                        match write_json(format!("data/articles/published/{}.json", article_id).as_str(), json) {
-                            Ok(_) => println!("{}Article saved to published", color::Fg(color::Cyan)),
-                            Err(_) => println!("{}Failed to save article to publishs", color::Fg(color::Red)),
-                        }
-                    },
-                    ArticleStatus::Archived => {
-                        match write_json(format!("data/articles/archived/{}.json", article_id).as_str(), json) {
-                            Ok(_) => println!("{}Article saved to archive", color::Fg(color::Cyan)),
-                            Err(_) => println!("{}Failed to save article to archive", color::Fg(color::Red)),
-                        }
-                    },
+                    None => {},
                 }
+
+                if !self.published_list.contains(&article_id_string) {
+                    self.published_list.push(article_id_string);
+                }
+                
+                self.rebuild_published_metadata(article_id);
+                Ok(())
             },
-            Err(_) => println!("{}Failed to serialize users file", color::Fg(color::Red))
+            Err(err) => Err(err),
         }
     }
 }
@@ -171,7 +285,7 @@ pub enum ArticleStatus
 {
     Draft,
     Published,
-    Archived
+    //Archived
 }
 
 #[allow(dead_code)]
