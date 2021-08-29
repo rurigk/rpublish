@@ -21,6 +21,10 @@
     justify-content: right;
 }
 
+.editor-section.no-margin {
+    margin-top: 0px;
+}
+
 .article-title {
     width: 100%;
     font-size: 1.1em;
