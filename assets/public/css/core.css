@@ -1,3 +1,18 @@
+h1, h2, h3, h4, h5, h6 {
+	margin: 0px 0px 10px 0px;
+	padding: 0;
+	border: 0;
+	outline: 0;
+	font-weight: inherit;
+	font-style: inherit;
+	font-family: inherit;
+	vertical-align: baseline;
+}
+/* remember to define focus styles! */
+:focus {
+	outline: 0;
+}
+
 * {
     /* Fonts */
     font-family: Arial, Helvetica, sans-serif;
@@ -23,6 +38,7 @@
     /* Buttons */
     --generic-button-bg: #DDD;
     --generic-button-text: #666;
+    --generic-button-text-active: #5CF;
     --generic-button-text-hover: #5CF;
 
     --low-contrast-button-bg: rgba(0, 0, 0, 0.07);
@@ -41,4 +57,5 @@
 body {
     margin: 0px;
     background-color: var(--main-bg);
+    color: var(--primary-text);
 }
