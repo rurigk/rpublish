@@ -1,5 +1,6 @@
 pub mod article;
 
+use std::collections::HashMap;
 use std::{fmt, fs};
 use std::path::Path;
 
@@ -109,9 +110,9 @@ impl ArticlesManager {
         }
     }
 
-    pub fn list_draft_articles (&mut self, start_index: usize, count: usize) -> (Vec<&ArticleMetadata>, usize) {
+    pub fn list_draft_articles (&mut self, start_index: usize, count: usize) -> (HashMap<String, &ArticleMetadata>, usize) {
         // Create a list for the returned refs
-        let mut articles_metadata: Vec<&ArticleMetadata> = Vec::new();
+        let mut articles_metadata: HashMap<String, &ArticleMetadata> = HashMap::new();
 
         // Total of articles count
         let total = self.draft_list.len();
@@ -133,7 +134,7 @@ impl ArticlesManager {
             for article_id in list_slice {
                 match self.draft_metadata_cache.get_metadata(article_id) {
                     Some(metadata) => {
-                        articles_metadata.push(metadata);
+                        articles_metadata.insert(article_id.to_string(),metadata);
                     },
                     None => {},
                 }
@@ -145,9 +146,9 @@ impl ArticlesManager {
         }
     }
 
-    pub fn list_published_articles (&mut self, start_index: usize, count: usize) -> (Vec<&ArticleMetadata>, usize) {
+    pub fn list_published_articles (&mut self, start_index: usize, count: usize) -> (HashMap<String, &ArticleMetadata>, usize) {
         // Create a list for the returned refs
-        let mut articles_metadata: Vec<&ArticleMetadata> = Vec::new();
+        let mut articles_metadata: HashMap<String, &ArticleMetadata> = HashMap::new();
 
         // Total of articles count
         let total = self.published_list.len();
@@ -168,7 +169,7 @@ impl ArticlesManager {
             for article_id in list_slice {
                 match self.published_metadata_cache.get_metadata(article_id) {
                     Some(metadata) => {
-                        articles_metadata.push(metadata);
+                        articles_metadata.insert(article_id.to_string(),metadata);
                     },
                     None => {},
                 }
