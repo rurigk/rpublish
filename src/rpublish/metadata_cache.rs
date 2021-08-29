@@ -1,8 +1,9 @@
 use std::{collections::HashMap, fs};
+use chrono::{DateTime, Utc};
 use serde::{Serialize, Deserialize};
 use std::path::PathBuf;
 
-use crate::helpers::write_json;
+use crate::{helpers::write_json};
 
 use super::articles_manager::article::Article;
 
@@ -96,6 +97,7 @@ impl MetadataCache {
                     metadata.title = article.title.to_owned();
                     metadata.author = article.author.to_owned();
                     metadata.tags = article.tags.to_owned();
+                    metadata.update_date = article.update_date.to_owned();
                     self.save_to_disk();
                 }
                 None => {
@@ -107,6 +109,8 @@ impl MetadataCache {
                 title: article.title.to_owned(),
                 author: article.author.to_owned(),
                 tags: article.tags.to_owned(),
+                created_date: article.created_date.to_owned(),
+                update_date: article.update_date.to_owned()
             });
             self.save_to_disk();
         }
@@ -117,5 +121,7 @@ impl MetadataCache {
 pub struct ArticleMetadata {
     title: String,
     author: String,
-    tags: Vec<String>
+    tags: Vec<String>,
+    created_date: DateTime<Utc>,
+    update_date: DateTime<Utc>
 }
