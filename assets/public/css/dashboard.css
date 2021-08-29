@@ -74,6 +74,7 @@ html, body {
 .main {
     display: grid;
     grid-template-rows: 80px 1fr;
+    overflow: auto;
 }
 
 .topbar {
@@ -105,6 +106,7 @@ html, body {
 
 .content  {
     padding: 0px 20px 20px 20px;
+    overflow: auto;
 }
 
 .page-indicators {
