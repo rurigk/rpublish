@@ -74,11 +74,17 @@
 }
 
 .paginator-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     font-size: 1.1em;
     border: none;
     background: transparent;
     color: var(--low-contrast-text);
+    width: 30px;
+    height: 30px;
+    padding: 0px;
 }
 
 .paginator-button:hover {
