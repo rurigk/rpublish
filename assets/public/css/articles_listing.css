@@ -5,7 +5,8 @@
 }
 
 .article-explorer-box {
-    margin-bottom: 30px;
+    color: var(--primary-text);
+    margin-bottom: 20px;
     width: 860px;
 }
 
@@ -21,21 +22,21 @@
     height: 40px;
 }
 
-.article-search-info {
+.article-explorer-paginator {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     background: var(--primary-bg);
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
-.article-search-count {
+.article-explorer-paginator-count {
     display: flex;
     align-items: center;
     color: var(--low-contrast-text);
     padding: 0px 15px;
 }
 
-.article-search-page {
+.article-explorer-paginator-page {
     display: flex;
     align-items: center;
     color: var(--low-contrast-text);
@@ -66,11 +67,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    font-weight: bold
 }
 
 .paginator-list button:hover {
     font-size: 0.9em;
     color: var(--generic-button-text-hover);
+}
+
+.paginator-list button[current] {
+    color: var(--generic-button-text-active);
 }
 
 .paginator-button {
@@ -101,4 +107,23 @@
 .paginator-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+.article-search-results {
+    margin-top: 10px;
+}
+
+.article-link-box {
+    background: var(--primary-bg);
+    border-bottom: 1px solid var(--secondary-bg);
+    padding: 10px;
+    color: var(--low-contrast-text);
+}
+
+.article-link {
+    text-decoration: none;
+}
+
+.article-link:last-child .article-link-box {
+    border-bottom: none;
 }
