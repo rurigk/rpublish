@@ -2,61 +2,63 @@
 <script src="/public/js/article_listing.js"></script>
 
 <div class="center-box">
-    <div class="article-explorer-box">
+    <div class="article-explorer-box" id="draft-articles-explorer">
+        <h2>Draft articles</h2>
         <input type="text" class="article-search-box" placeholder="Search draft articles">
         <div class="article-search-results"></div>
-        <div class="article-search-info">
-            <div class="article-search-count">
+        <div class="article-explorer-paginator">
+            <div class="article-explorer-paginator-count">
                 Showing&nbsp;
-                <span class="current-draft-articles-count">100</span>
+                <span class="current-articles-count">0</span>
                 &nbsp;of&nbsp;
-                <span class="total-draft-articles-count">1000</span>
+                <span class="total-articles-count">0</span>
             </div>
             <div class="paginator-box">
-                <button class="paginator-button draft-paginator-prev-button">
+                <button class="paginator-button paginator-prev-button">
                     <span class="iconify" data-icon="mdi-chevron-left"></span>
                 </button>
-                <div class="paginator-list draft-paginator-buttons">
+                <div class="paginator-list">
                     <button>1</button>
                 </div>
-                <button class="paginator-button draft-paginator-next-button">
+                <button class="paginator-button paginator-next-button">
                     <span class="iconify" data-icon="mdi-chevron-right"></span>
                 </button>
             </div>
-            <div class="article-search-page">
+            <div class="article-explorer-paginator-page">
                 Page&nbsp;
-                <span class="current-draft-articles-page">1</span>
+                <span class="current-articles-page">0</span>
                 &nbsp;of&nbsp;
-                <span class="total-draft-articles-pages">10</span>
+                <span class="total-articles-pages">0</span>
             </div>
         </div>
     </div>
-    <div class="article-explorer-box">
+    <div class="article-explorer-box" id="published-articles-explorer">
+        <h2>Published articles</h2>
         <input type="text" class="article-search-box" placeholder="Search published articles">
         <div class="article-search-results"></div>
-        <div class="article-search-info">
-            <div class="article-search-count">
+        <div class="article-explorer-paginator">
+            <div class="article-explorer-paginator-count">
                 Showing&nbsp;
-                <span class="current-published-articles-count">100</span>
+                <span class="current-articles-count">0</span>
                 &nbsp;of&nbsp;
-                <span class="total-published-articles-count">1000</span>
+                <span class="total-articles-count">0</span>
             </div>
             <div class="paginator-box">
-                <button class="paginator-button published-paginator-prev-button">
+                <button class="paginator-button paginator-prev-button">
                     <span class="iconify" data-icon="mdi-chevron-left"></span>
                 </button>
-                <div class="paginator-list published-paginator-buttons">
+                <div class="paginator-list">
                     <button>1</button>
                 </div>
-                <button class="paginator-button published-paginator-next-button">
+                <button class="paginator-button paginator-next-button">
                     <span class="iconify" data-icon="mdi-chevron-right"></span>
                 </button>
             </div>
-            <div class="article-search-page">
+            <div class="article-explorer-paginator-page">
                 Page&nbsp;
-                <span class="current-published-articles-page">1</span>
+                <span class="current-articles-page">0</span>
                 &nbsp;of&nbsp;
-                <span class="total-published-articles-pages">10</span>
+                <span class="total-articles-pages">0</span>
             </div>
         </div>
     </div>
