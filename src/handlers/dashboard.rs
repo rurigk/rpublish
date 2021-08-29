@@ -3,6 +3,7 @@ use uuid::Uuid;
 use std::{fs, sync::{Mutex}};
 use serde::{Serialize, Deserialize};
 use crate::rpublish::{self};
+use serde_json::json;
 
 pub fn configure (cfg: &mut web::ServiceConfig)
 {
@@ -16,8 +17,8 @@ pub fn configure (cfg: &mut web::ServiceConfig)
         .route("/api/article/{article_id}", web::put().to(api_update_article))
         .route("/api/article/{article_id}/publish", web::post().to(api_publish_article))
         
-        .route("/api/articles/draft", web::get().to(api_list_draft_articles))
-        .route("/api/articles/published", web::get().to(api_list_published_articles));
+        .route("/api/articles/draft/{start_index}/{count}", web::get().to(api_list_draft_articles))
+        .route("/api/articles/published/{start_index}/{count}", web::get().to(api_list_published_articles));
 }
 
 pub async fn dashboard() -> impl Responder {
@@ -106,21 +107,35 @@ fn get_dashboard_items() -> String {
 }
 
 fn api_list_draft_articles (
-    app: web::Data<Mutex<rpublish::RPublishApp>>
+    app: web::Data<Mutex<rpublish::RPublishApp>>,
+    info: web::Path<(usize, usize)>
 ) -> HttpResponse {
     let mut  app = app.lock().unwrap();
-    let articles = app.articles_manager.list_draft_articles();
+    let limits = info.into_inner();
+    let result = app.articles_manager.list_draft_articles(limits.0, limits.1);
 
-    HttpResponse::Ok().json(articles)
+    let json_response = json!({
+        "articles": result.0,
+        "total": result.1
+    });
+
+    HttpResponse::Ok().json(json_response)
 }
 
 fn api_list_published_articles (
-    app: web::Data<Mutex<rpublish::RPublishApp>>
+    app: web::Data<Mutex<rpublish::RPublishApp>>,
+    info: web::Path<(usize, usize)>
 ) -> HttpResponse {
     let mut  app = app.lock().unwrap();
-    let articles = app.articles_manager.list_published_articles();
+    let limits = info.into_inner();
+    let result = app.articles_manager.list_published_articles(limits.0, limits.1);
 
-    HttpResponse::Ok().json(articles)
+    let json_response = json!({
+        "articles": result.0,
+        "total": result.1
+    });
+
+    HttpResponse::Ok().json(json_response)
 }
 
 fn api_get_article (

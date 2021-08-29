@@ -109,30 +109,75 @@ impl ArticlesManager {
         }
     }
 
-    pub fn list_draft_articles (&mut self) -> Vec<&ArticleMetadata> {
+    pub fn list_draft_articles (&mut self, start_index: usize, count: usize) -> (Vec<&ArticleMetadata>, usize) {
+        // Create a list for the returned refs
         let mut articles_metadata: Vec<&ArticleMetadata> = Vec::new();
-        for article_id in &self.draft_list {
-            match &self.draft_metadata_cache.get_metadata(article_id) {
-                Some(metadata) => {
-                    articles_metadata.push(metadata);
-                },
-                None => {},
+
+        // Total of articles count
+        let total = self.draft_list.len();
+        
+        // Normalize count
+        let count = if count <= total {count} else {total};
+
+        // Check if the start index is in bounds
+        if start_index < total {
+            let list_slice: &[String];
+
+            // Get the correct slice
+            if start_index < total - count {
+                list_slice = &self.draft_list[start_index..start_index + count];
+            } else {
+                list_slice = &self.draft_list[start_index..];
             }
+
+            for article_id in list_slice {
+                match self.draft_metadata_cache.get_metadata(article_id) {
+                    Some(metadata) => {
+                        articles_metadata.push(metadata);
+                    },
+                    None => {},
+                }
+            }
+
+            (articles_metadata, total)
+        } else {
+            (articles_metadata, total)
         }
-        articles_metadata
     }
 
-    pub fn list_published_articles (&mut self) -> Vec<&ArticleMetadata> {
+    pub fn list_published_articles (&mut self, start_index: usize, count: usize) -> (Vec<&ArticleMetadata>, usize) {
+        // Create a list for the returned refs
         let mut articles_metadata: Vec<&ArticleMetadata> = Vec::new();
-        for article_id in &self.published_list {
-            match &self.published_metadata_cache.get_metadata(article_id) {
-                Some(metadata) => {
-                    articles_metadata.push(metadata);
-                },
-                None => {},
+
+        // Total of articles count
+        let total = self.published_list.len();
+
+        let count = if count <= total {count} else {total};
+
+        // Check if the start index is in bounds
+        if start_index < total {
+            let list_slice: &[String];
+
+            // Get the correct slice
+            if start_index < total - count {
+                list_slice = &self.published_list[start_index..start_index + count];
+            } else {
+                list_slice = &self.published_list[start_index..];
             }
+
+            for article_id in list_slice {
+                match self.published_metadata_cache.get_metadata(article_id) {
+                    Some(metadata) => {
+                        articles_metadata.push(metadata);
+                    },
+                    None => {},
+                }
+            }
+
+            (articles_metadata, total)
+        } else {
+            (articles_metadata, total)
         }
-        articles_metadata
     }
 
     fn read_article (file_path: &str) -> Option<Article> {
@@ -185,6 +230,7 @@ impl ArticlesManager {
 
         self.draft_metadata_cache.set_metadata(article_id, &new_article);
         self.save_article(article_id, &new_article, ArticleStatus::Draft);
+        self.draft_list.push(article_id.to_string());
     }
 
     pub fn read_latest (&self, article_id: &str) -> Option<Article> {
