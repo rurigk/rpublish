@@ -119,9 +119,9 @@ impl MetadataCache {
 
 #[derive(Serialize, Deserialize)]
 pub struct ArticleMetadata {
-    title: String,
-    author: String,
-    tags: Vec<String>,
-    created_date: DateTime<Utc>,
-    update_date: DateTime<Utc>
+    pub title: String,
+    pub author: String,
+    pub tags: Vec<String>,
+    pub created_date: DateTime<Utc>,
+    pub update_date: DateTime<Utc>
 }
