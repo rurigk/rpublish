@@ -18,7 +18,7 @@ pub async fn home(app: web::Data<Mutex<rpublish::RPublishApp>>) -> HttpResponse 
     // Aquire app reference
     let mut _app = app.lock().unwrap();
 
-    HttpResponse::Found()
+    HttpResponse::TemporaryRedirect()
         .header("Location", "/auth/login")
         .finish()
 }
