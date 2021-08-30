@@ -42,7 +42,7 @@ async fn main() -> std::io::Result<()> {
                 .use_last_modified(true),
         )
         .configure(handlers::public::configure)
-    }).bind("127.0.0.1:1337")?
+    }).bind("0.0.0.0:1337")?
     .run()
     .await
 }
