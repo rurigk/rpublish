@@ -51,6 +51,16 @@ h1, h2, h3, h4, h5, h6 {
     --normal-button-text-hover: #FFF;
 
     --contrast-button-bg: #DDD;
+
+    --success-button-bg: #6AD69A;
+    --success-button-bg-hover: #63c991;
+    --success-button-text: #FFF;
+    --success-button-text-hover: #FFF;
+    --success-button-bg-border: #5FC68F;
+
+    --indicator-green: #6AD69A;
+    --indicator-yellow: #ffc400;
+    --indicator-blue: #00d9ff;
 }
 
 
