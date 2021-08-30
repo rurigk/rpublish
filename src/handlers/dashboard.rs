@@ -147,7 +147,12 @@ fn api_get_article (
 
     match app.articles_manager.read_latest(&article_id) {
         Some(article) => {
-            HttpResponse::Ok().json(article)
+            HttpResponse::Ok().json(json!({
+                "article": article.0,
+                "status": article.1,
+                "published": article.2,
+                "published_date": article.3
+            }))
         },
         None => {
             HttpResponse::NotFound().finish()

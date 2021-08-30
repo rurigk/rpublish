@@ -3,6 +3,8 @@ pub mod article;
 use std::collections::HashMap;
 use std::{fmt, fs};
 use std::path::Path;
+use chrono::{DateTime, Utc};
+use serde::{Serialize, Deserialize};
 
 extern crate termion;
 use termion::{color};
@@ -234,17 +236,42 @@ impl ArticlesManager {
         self.draft_list.push(article_id.to_string());
     }
 
-    pub fn read_latest (&self, article_id: &str) -> Option<Article> {
+    pub fn read_latest (&self, article_id: &str) -> Option<(Article, ArticleStatus, bool, Option<DateTime<Utc>>)> {
         if self.draft_list.contains(&article_id.to_string()) {
             match Self::read_article(format!("data/articles/draft/{}.json", article_id).as_str()) {
                 Some(article) => {
-                    return Some(article)
+                    let is_published = self.published_list.contains(&article_id.to_string());
+                    let published_date: Option<DateTime<Utc>>;
+
+                    if is_published {
+                        match self.published_metadata_cache.get_metadata(article_id) {
+                            Some(metadata) => published_date = Some(metadata.update_date.to_owned()),
+                            None => published_date = None,
+                        }
+                    } else {
+                        published_date = None;
+                    }
+
+                    return Some((
+                        article, 
+                        ArticleStatus::Draft, 
+                        is_published,
+                        published_date
+                    ))
                 },
                 None => None,
             }
         } else if self.published_list.contains(&article_id.to_string()) {
             match Self::read_article(format!("data/articles/published/{}.json", article_id).as_str()) {
-                Some(article) => Some(article),
+                Some(article) => {
+                    let published_date = Some(article.update_date.to_owned());
+                    Some((
+                        article, 
+                        ArticleStatus::Published, 
+                        self.published_list.contains(&article_id.to_string()),
+                        published_date
+                    ))
+                },
                 None => None,
             }
         } else {
@@ -276,11 +303,11 @@ impl ArticlesManager {
     pub fn update(&mut self, article_id: &str, title: &str, data: &str) -> Result<(), ArticleError> {
         match self.read_latest(&article_id) {
             Some(mut article) => {
-                article.title = title.to_string();
-                article.data = data.to_string();
-                article.update_date = chrono::offset::Utc::now();
-                self.draft_metadata_cache.set_metadata(article_id, &article);
-                self.save_article(article_id, &article, ArticleStatus::Draft);
+                article.0.title = title.to_string();
+                article.0.data = data.to_string();
+                article.0.update_date = chrono::offset::Utc::now();
+                self.draft_metadata_cache.set_metadata(article_id, &article.0);
+                self.save_article(article_id, &article.0, ArticleStatus::Draft);
 
                 let article_id_string = article_id.to_string();
                 if !self.draft_list.contains(&article_id_string) {
@@ -318,6 +345,14 @@ impl ArticlesManager {
                 if !self.published_list.contains(&article_id_string) {
                     self.published_list.push(article_id_string);
                 }
+
+                match self.read_from (article_id, ArticleStatus::Published) {
+                    Some(mut article) => {
+                        article.update_date = chrono::offset::Utc::now();
+                        self.save_article(article_id, &article, ArticleStatus::Published);
+                    },
+                    None => {},
+                }
                 
                 self.rebuild_published_metadata(article_id);
                 Ok(())
@@ -328,6 +363,7 @@ impl ArticlesManager {
 }
 
 #[allow(dead_code)]
+#[derive(Serialize, Deserialize)]
 pub enum ArticleStatus
 {
     Draft,
