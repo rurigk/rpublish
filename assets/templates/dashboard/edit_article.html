@@ -1,5 +1,7 @@
 <link rel="stylesheet" href="/public/css/article_editor.css">
 
+<script src="/public/js/moment.min.js"></script>
+
 <script src="/public/js/editorjs/list.js"></script>
 <script src="/public/js/editorjs/attaches.js"></script>
 <script src="/public/js/editorjs/checklist.js"></script>
@@ -23,16 +25,38 @@
 <script src="/public/js/editor.js"></script>
 <script src="/public/js/article_editor.js"></script>
 
-<div class="center-editor">
-    <div class="editor-section">
-        <h2>Article Editor</h2>
+<div class="article-editor">
+    <div class="center-editor">
+        <div class="editor-section">
+            <h2>Article Editor</h2>
+        </div>
+        <div class="editor-section no-margin">
+            <h3>Article Title</h3>
+            <input type="text" class="article-title" placeholder="Article title">
+        </div>
+        <div id="rpusblish-editor"></div>
     </div>
-    <div class="editor-section no-margin">
-        <h3>Article Title</h3>
-        <input type="text" class="article-title" placeholder="Article title">
-    </div>
-    <div id="rpusblish-editor"></div>
-    <div class="editor-section right-align">
-        <button class="publish-button">Publish</button>
+    <div class="article-management-box">
+        <div class="article-management-section split">
+            <div>
+                <div class="article-info-box-title">Article Status</div>
+                <div class="article-info-box-status" id="article-status"></div>
+                <div class="article-info-box-date" id="article-status-last-update"></div>
+            </div>
+            <div class="rside">
+                <div class="composed-button">
+                    <button id="publish-article">Publish</button>
+                    <div><span class="iconify" data-icon="mdi-chevron-down"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-management-section">
+            <div>
+                <div class="article-info-box-title">Editor Status</div>
+                <div class="article-info-box-status" id="editor-status"></div>
+                <div class="article-info-box-date" id="editor-status-last-update"></div>
+            </div>
+        </div>
     </div>
 </div>
