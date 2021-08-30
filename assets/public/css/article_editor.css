@@ -1,14 +1,27 @@
+.article-editor {
+    display: grid;
+    grid-template-columns: 1fr 450px;
+    column-gap: 10px;
+    padding-right: 10px;
+    overflow: auto;
+    height: 100%;
+}
+
 #rpusblish-editor {
     background-color: var(--primary-bg);
     margin-top: 20px;
+    margin-bottom: 20px;
     width: 740px;
     padding: 30px 10px;
 }
 
 .center-editor {
+    overflow: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
+    scrollbar-color: gray transparent;
+    scrollbar-width: auto;
 }
 
 .editor-section {
@@ -47,4 +60,107 @@
 
 .publish-button:hover {
     background: var(--normal-button-bg-hover);
+}
+
+.article-management-box {
+    padding: 30px;
+    background: var(--primary-bg);
+    overflow: auto;
+}
+
+.management-info-section {
+
+}
+
+.article-management-section {
+    margin-bottom: 40px;
+}
+
+.article-management-section.split {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    margin-bottom: 40px;
+}
+
+.article-management-section.split .rside {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.composed-button {
+    display: inline-flex;
+}
+
+.composed-button button:first-child {
+    box-sizing: border-box;
+    font-size: 1em;
+    padding: 4px 14px 4px 14px;
+    height: 34px;
+    color: var(--success-button-text);
+    background-color: var(--success-button-bg);
+    border: 1px solid var(--success-button-bg-border);
+    border-radius: 4px 0px 0px 4px;
+    cursor: pointer;
+}
+
+.composed-button button:first-child:hover {
+    background-color: var(--success-button-bg-hover);
+}
+
+.composed-button div:last-child {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    box-sizing: border-box;
+    border-radius: 0px 4px 4px 0px;
+    color: var(--success-button-text);
+    background-color: var(--success-button-bg);
+    border: 1px solid var(--success-button-bg-border);
+    border-left: none;
+    cursor: pointer;
+    font-size: 1.2em;
+}
+
+.composed-button div:last-child:hover {
+    background-color: var(--success-button-bg-hover);
+}
+
+.article-info-box-title {
+    font-size: 0.9em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.article-info-box-status {
+    margin-bottom: 8px;
+}
+
+.article-info-box-status::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 6px;
+    margin-bottom: 2px;
+    border-radius: 100%;
+}
+
+.article-info-box-status[status="ok"]::before {
+    background-color: var(--indicator-green);
+}
+
+.article-info-box-status[status="alert"]::before {
+    background-color: var(--indicator-yellow);
+}
+
+.article-info-box-status[status="info"]::before {
+    background-color: var(--indicator-blue);
+}
+
+.article-info-box-date {
+    color: var(--low-contrast-text);
+    font-size: 0.8em;
 }
