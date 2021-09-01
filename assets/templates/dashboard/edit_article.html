@@ -46,7 +46,25 @@
             <div class="rside">
                 <div class="composed-button">
                     <button id="publish-article">Publish</button>
-                    <div><span class="iconify" data-icon="mdi-chevron-down"></span></div>
+                    <div class="alternate-article-actions-container">
+                        <span class="iconify alternate-article-actions-icon" data-icon="mdi-chevron-down"></span>
+                        <div class="alternate-article-actions-wrapper dropdown">
+                            <div class="alternate-article-actions">
+                                <button class="dropdown-item">
+                                    <span class="iconify" data-icon="mdi-backup-restore"></span>
+                                    Discard changes
+                                </button>
+                                <button class="dropdown-item">
+                                    <span class="iconify" data-icon="mdi-eye-remove"></span>
+                                    Unpublish
+                                </button>
+                                <button class="dropdown-item">
+                                    <span class="iconify" data-icon="mdi-delete-empty"></span>
+                                    Delete article
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
