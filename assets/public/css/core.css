@@ -37,9 +37,10 @@ h1, h2, h3, h4, h5, h6 {
 
     /* Buttons */
     --generic-button-bg: #DDD;
+    --generic-button-bg-hover: #DDD;
     --generic-button-text: #666;
-    --generic-button-text-active: #5CF;
-    --generic-button-text-hover: #5CF;
+    --generic-button-text-hover: #666;
+    --generic-button-border: #CCC;
 
     --low-contrast-button-bg: rgba(0, 0, 0, 0.07);
     --low-contrast-button-text: #666;
@@ -49,6 +50,7 @@ h1, h2, h3, h4, h5, h6 {
     --normal-button-bg-hover: #4CF;
     --normal-button-text: #FFF;
     --normal-button-text-hover: #FFF;
+    --normal-button-border: #2fa4df;
 
     --contrast-button-bg: #DDD;
 
@@ -56,11 +58,30 @@ h1, h2, h3, h4, h5, h6 {
     --success-button-bg-hover: #63c991;
     --success-button-text: #FFF;
     --success-button-text-hover: #FFF;
-    --success-button-bg-border: #5FC68F;
+    --success-button-border: #5FC68F;
+
+    --warning-button-bg: #ffb300;
+    --warning-button-bg-hover: #ffbb2a;
+    --warning-button-text: #FFF;
+    --warning-button-text-hover: #FFF;
+    --warning-button-border: #ffae00;
+
+    --danger-button-bg: #ff2018;
+    --danger-button-bg-hover: #ff3a33;
+    --danger-button-text: #FFF;
+    --danger-button-text-hover: #FFF;
+    --danger-button-border: #ec0800;
+
+    --dropdown-item-button-bg: #FFF;
+    --dropdown-item-button-bg-hover: #EEE;
+    --dropdown-item-button-text: #666;
+    --dropdown-item-button-text-hover: #666;
+    --dropdown-item-button-border: transparent;
 
     --indicator-green: #6AD69A;
     --indicator-yellow: #ffc400;
     --indicator-blue: #00d9ff;
+    --indicator-red: #ff2018;
 }
 
 
@@ -68,4 +89,71 @@ body {
     margin: 0px;
     background-color: var(--main-bg);
     color: var(--primary-text);
+}
+
+button.generic {
+    color: var(--generic-button-text);
+    background-color: var(--generic-button-bg);
+    border: 1px solid var(--generic-button-border);
+}
+
+button.generic:hover {
+    color: var(--generic-button-text-hover);
+    background-color: var(--generic-button-bg-hover);
+}
+
+button.info {
+    color: var(--normal-button-text);
+    background-color: var(--normal-button-bg);
+    border: 1px solid var(--normal-button-border);
+}
+
+button.info:hover {
+    color: var(--normal-button-text-hover);
+    background-color: var(--normal-button-bg-hover);
+}
+
+button.ok {
+    color: var(--success-button-text);
+    background-color: var(--success-button-bg);
+    border: 1px solid var(--success-button-border);
+}
+
+button.ok:hover {
+    color: var(--success-button-text-hover);
+    background-color: var(--success-button-bg-hover);
+}
+
+button.warning {
+    color: var(--warning-button-text);
+    background-color: var(--warning-button-bg);
+    border: 1px solid var(--warning-button-border);
+}
+
+button.warning:hover {
+    color: var(--warning-button-text-hover);
+    background-color: var(--warning-button-bg-hover);
+}
+
+button.danger {
+    color: var(--danger-button-text);
+    background-color: var(--danger-button-bg);
+    border: 1px solid var(--danger-button-border);
+}
+
+button.danger:hover {
+    color: var(--danger-button-text-hover);
+    background-color: var(--danger-button-bg-hover);
+}
+
+button.dropdown-item {
+    background: var(--dropdown-item-button-bg);
+    color: var(--dropdown-item-button-text);
+    border: none;
+}
+
+button.dropdown-item:hover {
+    background: var(--dropdown-item-button-bg-hover);
+    color: var(--dropdown-item-button-text-hover);
+    border: none;
 }
