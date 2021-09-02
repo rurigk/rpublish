@@ -17,6 +17,7 @@ pub fn configure (cfg: &mut web::ServiceConfig)
         .route("/api/article/{article_id}", web::put().to(api_update_article))
         .route("/api/article/{article_id}/publish", web::post().to(api_publish_article))
         .route("/api/article/{article_id}/unpublish", web::post().to(api_unpublish_article))
+        .route("/api/article/{article_id}/discard", web::post().to(api_discard_article_changes))
         .route("/api/article/{article_id}/delete", web::post().to(api_delete_article))
         
         .route("/api/articles/draft/{start_index}/{count}", web::get().to(api_list_draft_articles))
@@ -58,7 +59,7 @@ pub async fn edit_article_view(
     app: web::Data<Mutex<rpublish::RPublishApp>>,
     info: web::Path<String>
 ) -> impl Responder {
-    let mut app = app.lock().unwrap();
+    let app = app.lock().unwrap();
     let article_id: String = info.into_inner();
     match app.articles_manager.read_latest(&article_id) {
         Some(_) => {
@@ -213,6 +214,23 @@ fn api_unpublish_article (
     let article_id: String = info.into_inner();
 
     match app.articles_manager.unpublish(&article_id) {
+        Ok(_) => {
+            HttpResponse::Ok().finish()
+        },
+        Err(_) => {
+            HttpResponse::NotFound().finish()
+        },
+    }
+}
+
+fn api_discard_article_changes (
+    app: web::Data<Mutex<rpublish::RPublishApp>>, 
+    info: web::Path<String>
+) -> HttpResponse {
+    let mut app = app.lock().unwrap();
+    let article_id: String = info.into_inner();
+
+    match app.articles_manager.discard_changes(&article_id) {
         Ok(_) => {
             HttpResponse::Ok().finish()
         },
