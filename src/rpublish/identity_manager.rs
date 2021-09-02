@@ -109,13 +109,8 @@ impl Sessions {
         self.save();
     }
 
-    pub fn get_user(&self, sessid: &String) -> Option<String> {
-        match self.sessions.get(sessid) {
-            Some(session) => {
-                Some(session.username.to_owned())
-            },
-            None => None,
-        }
+    pub fn get_user(&self, sessid: &str) -> Option<String> {
+        self.sessions.get(sessid).map(|session| session.username.to_owned())
     }
 
     fn save(&self) {

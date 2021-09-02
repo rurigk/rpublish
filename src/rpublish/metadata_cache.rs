@@ -25,7 +25,7 @@ impl MetadataCache {
         match fs::read_dir(&path) {
             Ok(metadata_files) => {
                 let mut cache = Self {
-                    path: path,
+                    path,
                     articles: HashMap::new()
                 };
                 for file in metadata_files {
@@ -53,7 +53,7 @@ impl MetadataCache {
             },
             Err(_) => {
                 Self {
-                    path: path,
+                    path,
                     articles: HashMap::new()
                 }
             },
