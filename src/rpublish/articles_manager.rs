@@ -1,6 +1,7 @@
 pub mod article;
 
 use std::collections::HashMap;
+use std::io::ErrorKind;
 use std::{fmt, fs};
 use std::path::Path;
 use chrono::{DateTime, Utc};
@@ -94,19 +95,18 @@ impl ArticlesManager {
         }
     }
 
-    fn rebuild_draft_metadata (&mut self, article_id: &str) {
-        match self.read_from(article_id, ArticleStatus::Draft) {
+    fn rebuild_metadata (&mut self, article_id: &str, origin: ArticleStatus) {
+        match self.read_from(article_id, origin) {
             Some(article) => {
-                self.draft_metadata_cache.set_metadata(article_id, &article);
-            },
-            None => {},
-        }
-    }
-    
-    fn rebuild_published_metadata (&mut self, article_id: &str) {
-        match self.read_from(article_id, ArticleStatus::Published) {
-            Some(article) => {
-                self.published_metadata_cache.set_metadata(article_id, &article);
+                let metadata_cache: &mut MetadataCache;
+
+                if let ArticleStatus::Draft = origin {
+                    metadata_cache = &mut self.draft_metadata_cache;
+                } else {
+                    metadata_cache = &mut self.published_metadata_cache;
+                }
+                
+                metadata_cache.set_metadata(article_id, &article);
             },
             None => {},
         }
@@ -323,38 +323,110 @@ impl ArticlesManager {
         }
     }
 
-    pub fn _delete(&mut self, article_id: &str, status: ArticleStatus) {
-
+    pub fn delete(&mut self, article_id: &str) -> Result<(), std::io::Error> {
+        match self.delete_article(article_id, ArticleStatus::Draft) {
+            Ok(_) => {
+                match self.delete_article(article_id, ArticleStatus::Published) {
+                    Ok(_) => {
+                        Ok(())
+                    },
+                    Err(error) => Err(error),
+                }
+            },
+            Err(error) => Err(error),
+        }
     }
 
     pub fn publish(&mut self, article_id: &str) -> Result<(), std::io::Error>{
+        self.move_article(article_id, ArticleStatus::Draft, ArticleStatus::Published)
+    }
+
+    pub fn unpublish(&mut self, article_id: &str) -> Result<(), std::io::Error>{
+
+        if self.draft_list.contains(&article_id.to_string()) {
+            // Just remove the published version and keep the draft
+            self.delete_article(article_id, ArticleStatus::Published)
+        } else if self.published_list.contains(&article_id.to_string()) {
+            // We need to move the published article to the draft section
+            self.move_article(article_id, ArticleStatus::Published, ArticleStatus::Draft)
+        } else {
+            Err(std::io::Error::new(ErrorKind::NotFound, "Article not found"))
+        }
+    }
+
+    fn delete_article (&mut self, article_id: &str, origin: ArticleStatus) -> Result<(), std::io::Error> {
+        let origin_str: &str;
+        let list: &mut Vec<String>;
+
+        if let ArticleStatus::Draft = origin {
+            origin_str = "draft";
+            list = &mut self.draft_list;
+        } else {
+            origin_str = "published";
+            list = &mut self.published_list;
+        }
+        
+        // Remove the id from the published list
+        let article_id_string = article_id.to_string();
+        match list.iter().position(|x| x == &article_id_string) {
+            Some(id_index) => {
+                list.remove(id_index);
+            },
+            None => {},
+        }
+
+        // Remove published file
+        match fs::remove_file(format!("data/articles/{}/{}.json", origin_str, article_id)) {
+            Ok(_) => Ok(()),
+            Err(error) => Err(error),
+        }
+    }
+
+    fn move_article (&mut self, article_id: &str, origin: ArticleStatus, target: ArticleStatus) -> Result<(), std::io::Error> {
+        let origin_str: &str;
+        let target_str: &str;
+        let origin_list: &mut Vec<String>;
+        let target_list: &mut Vec<String>;
+        
+        if let ArticleStatus::Draft = origin {
+            origin_str = "draft";
+            target_str = "published";
+            origin_list = &mut self.draft_list;
+            target_list = &mut self.published_list;
+        } else {
+            origin_str = "published";
+            target_str = "draft";
+            origin_list = &mut self.published_list;
+            target_list = &mut self.draft_list;
+        }
+
         match move_file(
-            format!("data/articles/draft/{}.json", article_id).as_str(),
-            format!("data/articles/published/{}.json", article_id).as_str()
+            format!("data/articles/{}/{}.json", origin_str, article_id).as_str(),
+            format!("data/articles/{}/{}.json", target_str, article_id).as_str()
         ) {
             Ok(_) => {
                 let article_id_string = article_id.to_string();
 
-                match self.draft_list.iter().position(|x| x == &article_id_string) {
+                match origin_list.iter().position(|x| x == &article_id_string) {
                     Some(id_index) => {
-                        self.draft_list.remove(id_index);
+                        origin_list.remove(id_index);
                     },
                     None => {},
                 }
 
-                if !self.published_list.contains(&article_id_string) {
-                    self.published_list.push(article_id_string);
+                if !target_list.contains(&article_id_string) {
+                    target_list.push(article_id_string);
                 }
 
-                match self.read_from (article_id, ArticleStatus::Published) {
+                match self.read_from (article_id, target) {
                     Some(mut article) => {
                         article.update_date = chrono::offset::Utc::now();
-                        self.save_article(article_id, &article, ArticleStatus::Published);
+                        self.save_article(article_id, &article, target);
                     },
                     None => {},
                 }
                 
-                self.rebuild_published_metadata(article_id);
+                self.rebuild_metadata(article_id,target);
                 Ok(())
             },
             Err(err) => Err(err),
@@ -363,12 +435,11 @@ impl ArticlesManager {
 }
 
 #[allow(dead_code)]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 pub enum ArticleStatus
 {
     Draft,
     Published,
-    //Archived
 }
 
 #[allow(dead_code)]
