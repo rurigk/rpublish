@@ -112,6 +112,18 @@
     background-color: var(--success-button-bg-hover);
 }
 
+#unpublish-article[hide] {
+    display: none;
+}
+
+#discard-article-changes[hide] {
+    display: none;
+}
+
+#delete-article[hide] {
+    display: none;
+}
+
 .alternate-article-actions-container {
     display: flex;
     align-items: center;
@@ -145,7 +157,7 @@
     width: 165px;
     position: absolute;
     right: 0px;
-    margin-top: 152px;
+    top: 38px;
 }
 
 .alternate-article-actions {
