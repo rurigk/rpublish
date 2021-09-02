@@ -16,6 +16,8 @@ pub fn configure (cfg: &mut web::ServiceConfig)
         .route("/api/article/{article_id}", web::get().to(api_get_article))
         .route("/api/article/{article_id}", web::put().to(api_update_article))
         .route("/api/article/{article_id}/publish", web::post().to(api_publish_article))
+        .route("/api/article/{article_id}/unpublish", web::post().to(api_unpublish_article))
+        .route("/api/article/{article_id}/delete", web::post().to(api_delete_article))
         
         .route("/api/articles/draft/{start_index}/{count}", web::get().to(api_list_draft_articles))
         .route("/api/articles/published/{start_index}/{count}", web::get().to(api_list_published_articles));
@@ -202,3 +204,38 @@ fn api_publish_article (
         },
     }
 }
+
+fn api_unpublish_article (
+    app: web::Data<Mutex<rpublish::RPublishApp>>, 
+    info: web::Path<String>
+) -> HttpResponse {
+    let mut app = app.lock().unwrap();
+    let article_id: String = info.into_inner();
+
+    match app.articles_manager.unpublish(&article_id) {
+        Ok(_) => {
+            HttpResponse::Ok().finish()
+        },
+        Err(_) => {
+            HttpResponse::NotFound().finish()
+        },
+    }
+}
+
+fn api_delete_article (
+    app: web::Data<Mutex<rpublish::RPublishApp>>, 
+    info: web::Path<String>
+) -> HttpResponse {
+    let mut app = app.lock().unwrap();
+    let article_id: String = info.into_inner();
+
+    match app.articles_manager.delete(&article_id) {
+        Ok(_) => {
+            HttpResponse::Ok().finish()
+        },
+        Err(_) => {
+            HttpResponse::NotFound().finish()
+        },
+    }
+}
+
