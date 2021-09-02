@@ -23,7 +23,7 @@ pub struct ArticlesManager{
     published_metadata_cache: MetadataCache,
     draft_metadata_cache: MetadataCache,
 
-    articles_cache: ArticlesCache,
+    _articles_cache: ArticlesCache,
     published_list: Vec<String>,
     draft_list: Vec<String>
 }
@@ -42,7 +42,7 @@ impl ArticlesManager {
         Self {
             published_metadata_cache: MetadataCache::new("published"),
             draft_metadata_cache: MetadataCache::new("draft"),
-            articles_cache: ArticlesCache::new(),
+            _articles_cache: ArticlesCache::new(),
             published_list: published_ids,
             draft_list: draft_ids
         }
@@ -76,7 +76,9 @@ impl ArticlesManager {
                     Some(article) => {
                         self.draft_metadata_cache.set_metadata(article_id, &article);
                     },
-                    None => {},
+                    None => {
+                        println!("Failed to read article when building draft metadata");
+                    },
                 }
             }
         }
@@ -89,7 +91,9 @@ impl ArticlesManager {
                     Some(article) => {
                         self.published_metadata_cache.set_metadata(article_id, &article);
                     },
-                    None => {},
+                    None => {
+                        println!("Failed to read article when building published metadata");
+                    },
                 }
             }
         }
@@ -108,7 +112,9 @@ impl ArticlesManager {
                 
                 metadata_cache.set_metadata(article_id, &article);
             },
-            None => {},
+            None => {
+                println!("Failed to read article to rebuild metadata")
+            },
         }
     }
 
@@ -138,14 +144,14 @@ impl ArticlesManager {
                     Some(metadata) => {
                         articles_metadata.insert(article_id.to_string(),metadata);
                     },
-                    None => {},
+                    None => {
+                        println!("Failed to get metadata of article when listing draft articles")
+                    },
                 }
             }
-
-            (articles_metadata, total)
-        } else {
-            (articles_metadata, total)
         }
+        // Return metadata list
+        (articles_metadata, total)
     }
 
     pub fn list_published_articles (&mut self, start_index: usize, count: usize) -> (HashMap<String, &ArticleMetadata>, usize) {
@@ -173,14 +179,14 @@ impl ArticlesManager {
                     Some(metadata) => {
                         articles_metadata.insert(article_id.to_string(),metadata);
                     },
-                    None => {},
+                    None => {
+                        println!("Failed to get metadata of article when listing published articles")
+                    },
                 }
             }
-
-            (articles_metadata, total)
-        } else {
-            (articles_metadata, total)
         }
+        // Return metadata list
+        (articles_metadata, total)
     }
 
     fn read_article (file_path: &str) -> Option<Article> {
@@ -252,7 +258,7 @@ impl ArticlesManager {
                         published_date = None;
                     }
 
-                    return Some((
+                    Some((
                         article, 
                         ArticleStatus::Draft, 
                         is_published,
@@ -282,20 +288,10 @@ impl ArticlesManager {
     pub fn read_from (&self, article_id: &str, status: ArticleStatus) -> Option<Article>{
         match status {
             ArticleStatus::Draft => {
-                match Self::read_article(format!("data/articles/draft/{}.json", article_id).as_str()) {
-                    Some(article) => {
-                        return Some(article)
-                    },
-                    None => None,
-                }
+                Self::read_article(format!("data/articles/draft/{}.json", article_id).as_str())
             },
             ArticleStatus::Published => {
-                match Self::read_article(format!("data/articles/published/{}.json", article_id).as_str()) {
-                    Some(article) => {
-                        return Some(article)
-                    },
-                    None => None,
-                }
+                Self::read_article(format!("data/articles/published/{}.json", article_id).as_str())
             }
         }
     }
@@ -320,6 +316,20 @@ impl ArticlesManager {
                     kind: ArticleErrorKind::ArticleNotFound
                 })
             },
+        }
+    }
+
+    pub fn discard_changes(&mut self, article_id: &str) -> Result<(), std::io::Error> {
+        let is_published = self.published_list.contains(&article_id.to_string());
+        if is_published {
+            match self.delete_article(article_id, ArticleStatus::Draft) {
+                Ok(_) => {
+                    Ok(())
+                },
+                Err(error) => Err(error),
+            }
+        } else {
+            Err(std::io::Error::new(ErrorKind::NotFound, "Article is not published"))
         }
     }
 
@@ -372,7 +382,9 @@ impl ArticlesManager {
             Some(id_index) => {
                 list.remove(id_index);
             },
-            None => {},
+            None => {
+                println!("Failed to find article_id index to remove it from the origin list after article deletion")
+            },
         }
 
         // Remove published file
@@ -411,7 +423,9 @@ impl ArticlesManager {
                     Some(id_index) => {
                         origin_list.remove(id_index);
                     },
-                    None => {},
+                    None => {
+                        println!("Failed to find article_id index to remove it from the origin list")
+                    },
                 }
 
                 if !target_list.contains(&article_id_string) {
@@ -423,7 +437,9 @@ impl ArticlesManager {
                         article.update_date = chrono::offset::Utc::now();
                         self.save_article(article_id, &article, target);
                     },
-                    None => {},
+                    None => {
+                        println!("Failed to read article to update the date after move")
+                    },
                 }
                 
                 self.rebuild_metadata(article_id,target);
