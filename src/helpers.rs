@@ -32,6 +32,10 @@ fn setup_directories_structure() -> bool{
     if !graceful_mkdir("data/articles/published") {return false;}
     if !graceful_mkdir("data/articles/draft") {return false;}
 
+    if !graceful_mkdir("data/articles_trashcan") {return false;}
+    if !graceful_mkdir("data/articles_trashcan/published") {return false;}
+    if !graceful_mkdir("data/articles_trashcan/draft") {return false;}
+
     // System cache
     if !graceful_mkdir("data/cache") {return false;}
     if !graceful_mkdir("data/cache/metadata") {return false;}
