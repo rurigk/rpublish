@@ -173,7 +173,10 @@ class ArticleEditor {
             })
 
             this.discard_changes_button.addEventListener("click", () => {
-                //
+                // Unpublish the article
+                this.discard_article_changes(this.article_id).then(() => {
+                    location.reload();
+                }).catch(() => {})
             })
 
             this.delete_article_button.addEventListener("click", () => {
@@ -191,7 +194,8 @@ class ArticleEditor {
         this.editor.save().then((outputData) => {
             this.save_draft(this.article_id, this.title_input.value, outputData).then(() => {
                 this.update_date = moment();
-                this.status = "edited";
+                this.status = "draft";
+                this.update_article_status();
                 this.update_editor_status();
             }).catch(() => {})
         }).catch((error) => {
@@ -207,7 +211,11 @@ class ArticleEditor {
                 this.article_status.innerText = "Published";
                 this.article_status.setAttribute("status", "ok");
                 this.article_status_last_update.innerText = "Last published " + moment(this.published_date).fromNow();
-                this.unpublish_button.removeAttribute("hide");
+                if (this.status.toLowerCase() == "draft") {
+                    this.unpublish_button.setAttribute("hide", "");
+                } else {
+                    this.unpublish_button.removeAttribute("hide");
+                }
                 break;
             case "unpublished":
             case false:
@@ -227,7 +235,6 @@ class ArticleEditor {
                 this.discard_changes_button.setAttribute("hide", "");
                 break;
             case "draft":
-            case "edited":
                 this.editor_status.innerText = "Modified";
                 this.editor_status.setAttribute("status", "info");
                 if (this.is_published) {
