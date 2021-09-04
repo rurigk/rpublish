@@ -16,6 +16,7 @@ pub fn setup_system() -> Result<()> {
 }
 
 fn setup_directories_structure() -> bool{
+    println!("{}- Initializing directories", color::Fg(color::Yellow));
     // Root directory
     if !graceful_mkdir("data") {return false;}
 
@@ -59,14 +60,14 @@ fn graceful_mkdir(dir_path: &str) -> bool {
         Ok(attributes) => {
             if attributes.is_dir() {
                 if attributes.permissions().readonly() {
-                    println!("{}{}/{}: Is not writable", color::Fg(color::Red), current_path, path.display());
+                    println!("{}\t{}/{}: Is not writable{}", color::Fg(color::Red), current_path, path.display(), color::Fg(color::Reset));
                     return false;
                 }
-                println!("{}{}/{}: OK", color::Fg(color::Green), current_path, path.display());
+                println!("{}\t{}/{}: OK{}", color::Fg(color::Green), current_path, path.display(), color::Fg(color::Reset));
                 true
             }
             else {
-                println!("{}{}/{}: Is not a directory", color::Fg(color::Red), current_path,path.display());
+                println!("{}\t{}/{}: Is not a directory{}", color::Fg(color::Red), current_path,path.display(), color::Fg(color::Reset));
                 false
             }
         },
@@ -78,17 +79,17 @@ fn graceful_mkdir(dir_path: &str) -> bool {
                     let create_result = fs::create_dir(path);
                     match create_result {
                         Ok(_) => {
-                            println!("{}{}/{}: Created", color::Fg(color::Cyan), current_path,path.display());
+                            println!("{}\t{}/{}: Created{}", color::Fg(color::Cyan), current_path,path.display(), color::Fg(color::Reset));
                             true
                         },
                         Err(create_error) =>  {
-                            println!("{}{}/{}: {}", color::Fg(color::Red), current_path,path.display(), create_error);
+                            println!("{}\t{}/{}: {}{}", color::Fg(color::Red), current_path,path.display(), create_error, color::Fg(color::Reset));
                             false
                         }
                     }
                 },
                 _ => {
-                    println!("{}Error not managed {}", color::Fg(color::Red), error);
+                    println!("{}\tError not managed {}{}", color::Fg(color::Red), error, color::Fg(color::Reset));
                     false
                 }
             }
@@ -112,7 +113,7 @@ pub fn write_json(file_path: &str, content: String) -> Result<()>
             match file.write_all(content.as_bytes()) {
                 Ok(_) => {
                     // Content written
-                    println!("{} File Writed: {}/{}", color::Fg(color::Cyan), current_path, path.display());
+                    //println!("{} File Writed: {}/{}", color::Fg(color::Cyan), current_path, path.display());
                     Ok(())
                 },
                 Err(error) => {

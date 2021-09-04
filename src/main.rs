@@ -21,7 +21,7 @@ async fn main() -> std::io::Result<()> {
         rpublish::RPublishApp::default()
     ));
 
-    println!("Starting the server");
+    println!("{}- Starting the server uwu", color::Fg(color::Yellow));
     // Bind and start the server
     HttpServer::new(move || {
         App::new()

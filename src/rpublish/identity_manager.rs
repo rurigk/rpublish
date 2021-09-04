@@ -55,7 +55,7 @@ impl Sessions {
                 let reader = BufReader::new(file);
                 match serde_json::from_reader::<BufReader<File>, Self>(reader) {
                     Ok(users) => {
-                        println!("{}Sessions loaded", color::Fg(color::Green));
+                        println!("{}- Sessions loaded", color::Fg(color::Yellow));
                         Ok(users)
                     },
                     Err(_) => {
@@ -151,7 +151,7 @@ impl Users {
                 let reader = BufReader::new(file);
                 match serde_json::from_reader::<BufReader<File>, Self>(reader) {
                     Ok(users) => {
-                        println!("{}Users loaded", color::Fg(color::Green));
+                        println!("{}- Users loaded", color::Fg(color::Yellow));
                         Ok(users)
                     },
                     Err(_) => {
@@ -189,6 +189,8 @@ impl Users {
 
                         new_users.save();
 
+                        println!("{}{}User saved", color::Fg(color::Reset), style::Reset);
+
                         Ok(new_users)
                     },
                     ErrorKind::PermissionDenied => {
@@ -206,7 +208,7 @@ impl Users {
 
     fn read_input(text: &str) -> String {
         let mut data : String = String::new();
-        print!("    {}{}{}{}{}{}", style::Reset, style::Bold, color::Fg(color::Yellow), text, style::Reset, style::Bold);
+        print!("    {}{}{}{}{}", style::Reset, style::Bold, color::Fg(color::Yellow), text, color::Fg(color::Reset));
         stdout().flush().expect("Could not flush stdout");
         stdin().read_line(&mut data).expect("Error: unable to read user input");
         data.trim().to_string()
@@ -214,7 +216,7 @@ impl Users {
 
     fn read_input_hidden(text: &str) -> Option<String> {
         let mut stdout = stdout();
-        print!("\n    {}{}{}{}{}{}", style::Reset, style::Bold, color::Fg(color::Yellow), text, style::Reset, style::Bold);
+        print!("\n    {}{}{}{}{}", style::Reset, style::Bold, color::Fg(color::Yellow), text, color::Fg(color::Reset));
         stdout.flush().expect("Could not flush stdout");
         stdin().read_passwd(&mut stdout).expect("Error: unable to read user input")
     }

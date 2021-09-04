@@ -177,8 +177,6 @@ fn api_update_article (
     let mut app = app.lock().unwrap();
     let article_id: String = info.into_inner();
 
-    println!("api_update_article {}", &article_id);
-
     match app.articles_manager.update(&article_id, &article_update.title, &article_update.data) {
         Ok(_) => {
             HttpResponse::Ok().finish()
