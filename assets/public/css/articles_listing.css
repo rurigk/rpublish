@@ -127,3 +127,11 @@
 .article-link:last-child .article-link-box {
     border-bottom: none;
 }
+
+.no-articles-found {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    color: var(--secondary-text);
+    font-size: 1.3em;
+}
