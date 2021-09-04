@@ -82,6 +82,9 @@ class ArticlesExplorer {
             
             // Calc the number of buttons to add to the paginator
             var page_range = this.page_range(this.paginator.page, total_pages, this.paginator.max_buttons);
+            if(page_range.start == 0 && page_range.end == 0) {
+                page_range.end = 1;
+            }
             for (let i = page_range.start; i < page_range.end; i++) {
                 var page_selector = document.createElement("button");
                 page_selector.innerText = i + 1;
@@ -118,6 +121,11 @@ class ArticlesExplorer {
             article_link.appendChild(article_box);
             // Append the article
             this.results_box.appendChild(article_link);
+        }
+        
+        if (Object.keys(articles).length == 0)
+        {
+            this.results_box.innerHTML = `<div class="no-articles-found">No articles found</div>`;
         }
     }
 
