@@ -1,0 +1,73 @@
+* {
+    /* Fonts */
+    font-family: Arial, Helvetica, sans-serif;
+
+    /* Background colors */
+
+    /* Main page bg colors */
+    --main-bg: #222;
+
+    /* Base page bg colors */
+    --primary-bg: #333;
+    --secondary-bg: #444;
+    
+    /* Accents */
+    --accent-bg: #90D9EC;
+
+    /* Text colors */
+    --primary-text: #FFF;
+    --contrast-text: #333;
+    --secondary-text: #666;
+    --low-contrast-text: #888;
+
+    --input-bg: #444;
+
+    /* Buttons */
+    --generic-button-bg: #666;
+    --generic-button-bg-hover: #555;
+    --generic-button-text: #FFF;
+    --generic-button-text-hover: #FFF;
+    --generic-button-border: #CCC;
+
+    --low-contrast-button-bg: rgba(0, 0, 0, 0.07);
+    --low-contrast-button-text: #666;
+    --low-contrast-button-text-hover: #5CF;
+
+    --normal-button-bg: #43B8F2;
+    --normal-button-bg-hover: #4CF;
+    --normal-button-text: #FFF;
+    --normal-button-text-hover: #FFF;
+    --normal-button-border: #2fa4df;
+
+    --navbar-button-bg: #666;
+    --navbar-button-bg-hover: #666;
+    --navbar-button-text: #FFF;
+    --navbar-button-text-hover: #FFF;
+    --navbar-button-border: #CCC;
+
+    --contrast-button-bg: #DDD;
+
+    --success-button-bg: #6AD69A;
+    --success-button-bg-hover: #63c991;
+    --success-button-text: #FFF;
+    --success-button-text-hover: #FFF;
+    --success-button-border: #5FC68F;
+
+    --warning-button-bg: #ffb300;
+    --warning-button-bg-hover: #ffbb2a;
+    --warning-button-text: #FFF;
+    --warning-button-text-hover: #FFF;
+    --warning-button-border: #ffae00;
+
+    --danger-button-bg: #ff2018;
+    --danger-button-bg-hover: #ff3a33;
+    --danger-button-text: #FFF;
+    --danger-button-text-hover: #FFF;
+    --danger-button-border: #ec0800;
+
+    --dropdown-item-button-bg: #555;
+    --dropdown-item-button-bg-hover: #444;
+    --dropdown-item-button-text: #FFF;
+    --dropdown-item-button-text-hover: #FFF;
+    --dropdown-item-button-border: transparent;
+}
