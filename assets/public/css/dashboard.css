@@ -146,14 +146,19 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #FFF;
-    color: var(--secondary-text);
+    background: var(--navbar-button-bg);
+    color: var(--navbar-button-text);
     min-width: 40px;
     height: 40px;
     border-radius: 6px;
     font-size: 1.2em;
     cursor: pointer;
     padding: 0px 10px;
+}
+
+.navbar-button:hover {
+    background: var(--navbar-button-bg-hover);
+    color: var(--navbar-button-text-hover);
 }
 
 .navbar-button.icon {
