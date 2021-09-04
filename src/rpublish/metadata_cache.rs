@@ -68,7 +68,9 @@ impl MetadataCache {
                     let mut metadata_path = self.path.to_owned();
                     metadata_path.push(format!("{}.json", &article_id));
                     match write_json(metadata_path.to_str().unwrap(), json) {
-                        Ok(_) => println!("Metadata cache of {} saved", &article_id),
+                        Ok(_) => {
+                            // println!("Metadata cache of {} saved", &article_id)
+                        },
                         Err(_) => println!("Failed to save metadata of {}", &article_id),
                     }
                 },
@@ -113,6 +115,12 @@ impl MetadataCache {
                 update_date: article.update_date.to_owned()
             });
             self.save_to_disk();
+        }
+    }
+
+    pub fn remove_metadata(&mut self, article_id: &str) {
+        if self.articles.contains_key(article_id) {
+            self.articles.remove(article_id);
         }
     }
 }

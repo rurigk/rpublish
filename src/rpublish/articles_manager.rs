@@ -211,14 +211,14 @@ impl ArticlesManager {
                 match status {
                     ArticleStatus::Draft => {
                         match write_json(format!("data/articles/draft/{}.json", article_id).as_str(), json) {
-                            Ok(_) => println!("{}Article draft saved", color::Fg(color::Cyan)),
-                            Err(_) => println!("{}Failed to save draft article file", color::Fg(color::Red)),
+                            Ok(_) => println!("{}Article draft saved{}", color::Fg(color::Cyan), color::Fg(color::Reset)),
+                            Err(_) => println!("{}Failed to save draft article file{}", color::Fg(color::Red), color::Fg(color::Reset)),
                         }
                     },
                     ArticleStatus::Published => {
                         match write_json(format!("data/articles/published/{}.json", article_id).as_str(), json) {
-                            Ok(_) => println!("{}Article saved to published", color::Fg(color::Cyan)),
-                            Err(_) => println!("{}Failed to save article to publishs", color::Fg(color::Red)),
+                            Ok(_) => println!("{}Article saved to published{}", color::Fg(color::Cyan), color::Fg(color::Reset)),
+                            Err(_) => println!("{}Failed to save article to publishs{}", color::Fg(color::Red), color::Fg(color::Reset)),
                         }
                     }
                 }
@@ -366,21 +366,26 @@ impl ArticlesManager {
 
     fn delete_article (&mut self, article_id: &str, origin: ArticleStatus) -> Result<(), std::io::Error> {
         let origin_str: &str;
-        let list: &mut Vec<String>;
+        let origin_list: &mut Vec<String>;
+        let metadata_cache: &mut MetadataCache;
 
         if let ArticleStatus::Draft = origin {
             origin_str = "draft";
-            list = &mut self.draft_list;
+            origin_list = &mut self.draft_list;
+            metadata_cache = &mut self.draft_metadata_cache;
         } else {
             origin_str = "published";
-            list = &mut self.published_list;
+            origin_list = &mut self.published_list;
+            metadata_cache = &mut self.published_metadata_cache;
         }
         
         // Remove the id from the published list
         let article_id_string = article_id.to_string();
-        if let Some(id_index) = list.iter().position(|x| x == &article_id_string) {
-            list.remove(id_index);
+        if let Some(id_index) = origin_list.iter().position(|x| x == &article_id_string) {
+            origin_list.remove(id_index);
         }
+
+        metadata_cache.remove_metadata(article_id);
 
         // Remove published file
         match fs::remove_file(format!("data/articles/{}/{}.json", origin_str, article_id)) {
@@ -394,17 +399,20 @@ impl ArticlesManager {
         let target_str: &str;
         let origin_list: &mut Vec<String>;
         let target_list: &mut Vec<String>;
+        let metadata_cache: &mut MetadataCache;
         
         if let ArticleStatus::Draft = origin {
             origin_str = "draft";
             target_str = "published";
             origin_list = &mut self.draft_list;
             target_list = &mut self.published_list;
+            metadata_cache = &mut self.draft_metadata_cache;
         } else {
             origin_str = "published";
             target_str = "draft";
             origin_list = &mut self.published_list;
             target_list = &mut self.draft_list;
+            metadata_cache = &mut self.published_metadata_cache;
         }
 
         match move_file(
@@ -422,6 +430,8 @@ impl ArticlesManager {
                         println!("Failed to find article_id index to remove it from the origin list");
                     },
                 }
+
+                metadata_cache.remove_metadata(article_id);
 
                 if !target_list.contains(&article_id_string) {
                     target_list.push(article_id_string);
