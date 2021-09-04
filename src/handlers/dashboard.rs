@@ -234,8 +234,9 @@ fn api_discard_article_changes (
         Ok(_) => {
             HttpResponse::Ok().finish()
         },
-        Err(_) => {
-            HttpResponse::NotFound().finish()
+        Err(error) => {
+            println!("{:?}", error);
+            HttpResponse::NotFound().body("Failed to discard article")
         },
     }
 }
@@ -251,8 +252,9 @@ fn api_delete_article (
         Ok(_) => {
             HttpResponse::Ok().finish()
         },
-        Err(_) => {
-            HttpResponse::NotFound().finish()
+        Err(error) => {
+            println!("{:?}", error);
+            HttpResponse::NotFound().body("Failed to delete article")
         },
     }
 }
