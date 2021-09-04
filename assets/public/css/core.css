@@ -35,6 +35,8 @@ h1, h2, h3, h4, h5, h6 {
     --secondary-text: #666;
     --low-contrast-text: #888;
 
+    --input-bg: #FFF;
+
     /* Buttons */
     --generic-button-bg: #DDD;
     --generic-button-bg-hover: #DDD;
@@ -51,6 +53,12 @@ h1, h2, h3, h4, h5, h6 {
     --normal-button-text: #FFF;
     --normal-button-text-hover: #FFF;
     --normal-button-border: #2fa4df;
+
+    --navbar-button-bg: #FFF;
+    --navbar-button-bg-hover: #FFF;
+    --navbar-button-text: #666;
+    --navbar-button-text-hover: #666;
+    --navbar-button-border: #CCC;
 
     --contrast-button-bg: #DDD;
 
@@ -156,4 +164,9 @@ button.dropdown-item:hover {
     background: var(--dropdown-item-button-bg-hover);
     color: var(--dropdown-item-button-text-hover);
     border: none;
+}
+
+input[type="text"], input[type="password"] {
+    background-color: var(--input-bg);
+    color: var(--primary-text);
 }
