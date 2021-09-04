@@ -334,17 +334,17 @@ impl ArticlesManager {
     }
 
     pub fn delete(&mut self, article_id: &str) -> Result<(), std::io::Error> {
-        match self.delete_article(article_id, ArticleStatus::Draft) {
-            Ok(_) => {
-                match self.delete_article(article_id, ArticleStatus::Published) {
-                    Ok(_) => {
-                        Ok(())
-                    },
-                    Err(error) => Err(error),
-                }
-            },
-            Err(error) => Err(error),
+        if let Err(error) = self.delete_article(article_id, ArticleStatus::Draft) {
+            if error.kind() != ErrorKind::NotFound {
+                return Err(error)
+            }
         }
+        if let Err(error) = self.delete_article(article_id, ArticleStatus::Published) {
+            if error.kind() != ErrorKind::NotFound {
+                return Err(error)
+            }
+        }
+        Ok(())
     }
 
     pub fn publish(&mut self, article_id: &str) -> Result<(), std::io::Error>{
@@ -378,13 +378,8 @@ impl ArticlesManager {
         
         // Remove the id from the published list
         let article_id_string = article_id.to_string();
-        match list.iter().position(|x| x == &article_id_string) {
-            Some(id_index) => {
-                list.remove(id_index);
-            },
-            None => {
-                println!("Failed to find article_id index to remove it from the origin list after article deletion")
-            },
+        if let Some(id_index) = list.iter().position(|x| x == &article_id_string) {
+            list.remove(id_index);
         }
 
         // Remove published file
@@ -424,7 +419,7 @@ impl ArticlesManager {
                         origin_list.remove(id_index);
                     },
                     None => {
-                        println!("Failed to find article_id index to remove it from the origin list")
+                        println!("Failed to find article_id index to remove it from the origin list");
                     },
                 }
 
@@ -438,7 +433,7 @@ impl ArticlesManager {
                         self.save_article(article_id, &article, target);
                     },
                     None => {
-                        println!("Failed to read article to update the date after move")
+                        println!("Failed to read article to update the date after move");
                     },
                 }
                 
